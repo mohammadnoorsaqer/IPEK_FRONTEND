@@ -145,6 +145,20 @@ body {
   animation: pulse-soft 2.4s ease-out infinite;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .marquee-track,
+  .float-slow,
+  .btn-live::after,
+  .whatsapp-live,
+  .group:hover .media-frame img,
+  .group:hover .media-frame .next-image {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+}
+
 [dir='rtl'] .marquee-track {
   animation-name: marquee-rtl;
 }

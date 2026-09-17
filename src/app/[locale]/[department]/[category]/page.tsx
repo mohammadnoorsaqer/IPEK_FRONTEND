@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import {
+  emptyPage,
   getCategories,
   getCategoryBySlug,
   getProducts,
@@ -15,6 +16,8 @@ import { ProductGrid } from '@/components/product/ProductGrid';
 import { ListingFilters } from '@/components/listing/ListingFilters';
 import { absoluteUrl, categoryPath, departmentPath } from '@/lib/paths';
 import { site } from '@/lib/site';
+import { parseListingSearch, toProductQuery, type ListingSearch } from '@/lib/listing';
+import { getFilterFacets } from '@/lib/listing-data';
 
 export const revalidate = 300;
 export const dynamicParams = true;
@@ -55,8 +58,8 @@ export async function generateMetadata({
 
   const name = localizedName(item, locale as Locale);
   const departmentName = localizedName(item.department, locale as Locale);
-  const title = `${name} · ${departmentName} · ${site.name}`;
-  const description = `${name} — ${departmentName}`;
+  const title = `${name} · ${departmentName}`;
+  const description = `${name}. ${departmentName}.`;
   const en = categoryPath('en', item.department, item);
   const ar = categoryPath('ar', item.department, item);
 
@@ -79,13 +82,13 @@ export default async function CategoryPage({
   searchParams,
 }: {
   params: Promise<{ locale: string; department: string; category: string }>;
-  searchParams: Promise<{ sort?: string }>;
+  searchParams: Promise<ListingSearch>;
 }) {
   const { locale, department, category } = await params;
-  const { sort: sortParam } = await searchParams;
+  const search = await searchParams;
   setRequestLocale(locale);
   const typedLocale = locale as Locale;
-  const sort = sortParam === 'best_selling' ? 'best_selling' : 'newest';
+  const listing = parseListingSearch(search);
 
   const categoryItem = await getCategoryBySlug(
     typedLocale,
@@ -94,7 +97,14 @@ export default async function CategoryPage({
   ).catch(() => null);
   if (!categoryItem?.department) notFound();
 
-  const [categories, products, t] = await Promise.all([
+  const productQuery = toProductQuery(listing, {
+    locale: typedLocale,
+    department_slug: department,
+    category_slug: category,
+    limit: 12,
+  });
+
+  const [categories, products, facets, t] = await Promise.all([
     safeFetch(
       () =>
         getCategories({
@@ -102,19 +112,10 @@ export default async function CategoryPage({
           locale: typedLocale,
           limit: 50,
         }),
-      { results: [], page: 1, limit: 50, total: 0, totalPages: 0 },
+      emptyPage(50),
     ),
-    safeFetch(
-      () =>
-        getProducts({
-          locale: typedLocale,
-          department_slug: department,
-          category_slug: category,
-          sort,
-          limit: 12,
-        }),
-      { results: [], page: 1, limit: 12, total: 0, totalPages: 0 },
-    ),
+    safeFetch(() => getProducts(productQuery), emptyPage(12)),
+    getFilterFacets(),
     getTranslations('home'),
   ]);
 
@@ -161,22 +162,25 @@ export default async function CategoryPage({
         <p className="text-xs uppercase tracking-[0.3em] text-muted">
           {departmentName}
         </p>
-        <h1 className="mb-10 mt-3 text-4xl">{name}</h1>
-        <div className="grid gap-10 lg:grid-cols-[16rem_1fr]">
+        <h1 className="mb-6 mt-2 text-3xl">{name}</h1>
+        <div className="grid gap-8 lg:grid-cols-[15.5rem_1fr]">
           <ListingFilters
             locale={typedLocale}
             departmentSlug={department}
             categorySlug={category}
             categories={categories.results}
-            sort={sort}
+            colors={facets.colors}
+            sizes={facets.sizes}
+            brands={facets.brands}
+            seasons={facets.seasons}
+            values={listing}
           />
           <ProductGrid
-            key={`${department}-${category}-${sort}`}
+            key={`${department}-${category}-${JSON.stringify(listing)}`}
             locale={typedLocale}
-            departmentSlug={department}
-            categorySlug={category}
-            sort={sort}
+            query={productQuery}
             initialProducts={products.results}
+            compact
           />
         </div>
       </div>

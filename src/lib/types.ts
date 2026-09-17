@@ -81,6 +81,51 @@ export type Product = {
   category?: Category;
 };
 
+export type NamedItem = {
+  id: string;
+  name_en: string;
+  name_ar: string;
+};
+
+export type Color = NamedItem & { hex_code: string };
+export type Size = NamedItem & { code: string; size_group?: string };
+export type Brand = NamedItem;
+export type Season = NamedItem;
+
+export type ProductQuery = {
+  locale?: Locale;
+  department_slug?: string;
+  category_slug?: string;
+  sort?: 'best_selling' | 'newest';
+  search?: string;
+  min_price?: number;
+  max_price?: number;
+  color_id?: string;
+  size_id?: string;
+  brand_id?: string;
+  season_id?: string;
+  limit?: number;
+  page?: number;
+};
+
+export type Favorite = {
+  id: string;
+  product_id: string;
+  product?: Product | null;
+};
+
+export type AppNotification = {
+  id: string;
+  title_en: string;
+  title_ar: string;
+  message_en: string;
+  message_ar: string;
+  is_read: boolean;
+  redirect_type?: 'order' | 'product' | 'discount' | 'favorite' | null;
+  redirect_id?: string | null;
+  created_at?: string;
+};
+
 export type CartLine = {
   id: string;
   product_variant_id: string;

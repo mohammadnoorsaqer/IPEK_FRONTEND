@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useRouter } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { getOrders } from '@/lib/api';
@@ -50,6 +50,13 @@ export default function AccountPage() {
           {t('placed')}
         </p>
       ) : null}
+
+      <Link
+        href="/account/favorites"
+        className="mt-8 inline-block text-sm underline underline-offset-4"
+      >
+        {t('favorites')}
+      </Link>
 
       <h2 className="mt-12 text-xl">{t('orders')}</h2>
       {orders.length === 0 ? (

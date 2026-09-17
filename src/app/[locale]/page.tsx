@@ -1,16 +1,16 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { Link } from '@/i18n/navigation';
 import { getDepartments, getProducts } from '@/lib/api';
 import { safeFetch } from '@/lib/safe';
 import { site } from '@/lib/site';
-import { localizedName, localizedSlug, type Locale } from '@/lib/types';
+import { type Locale, type Product } from '@/lib/types';
 import { ProductCard } from '@/components/product/ProductCard';
+import { DepartmentCard } from '@/components/catalog/DepartmentCard';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { AlternateLinks } from '@/components/i18n/AlternateLinks';
 import { absoluteUrl, languageAlternates } from '@/lib/paths';
 import { Reveal } from '@/components/motion/Reveal';
-import { Marquee } from '@/components/layout/Marquee';
+import { primaryImageUrl } from '@/components/media/MediaFrame';
 
 export const revalidate = 300;
 
@@ -21,7 +21,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'home' });
-  const title = `${site.name} · ${t('eyebrow')}`;
+  const title = `${site.name} · ${t('title')}`;
   const description = t('subtitle');
   const languages = languageAlternates('/en', '/ar').languages;
 
@@ -34,6 +34,18 @@ export async function generateMetadata({
     },
     openGraph: { title, description, locale, url: absoluteUrl(`/${locale}`) },
   };
+}
+
+function coverByDepartment(products: Product[]) {
+  const covers = new Map<string, string>();
+  for (const product of products) {
+    const departmentId = product.category?.department?.id;
+    const image = primaryImageUrl(product.images);
+    if (departmentId && image && !covers.has(departmentId)) {
+      covers.set(departmentId, image);
+    }
+  }
+  return covers;
 }
 
 export default async function HomePage({
@@ -64,17 +76,13 @@ export default async function HomePage({
     ),
   ]);
 
-  const saleItems = newest.results
-    .filter(
-      (product) =>
-        Number(product.current_price ?? product.base_price) <
-        Number(product.base_price),
-    )
-    .slice(0, 3);
-
-  const shopHref = departments.results[0]
-    ? `/${localizedSlug(departments.results[0], typedLocale)}`
-    : '/search';
+  const visibleDepartments = departments.results.filter(
+    (item) => item.is_visible !== false,
+  );
+  const covers = coverByDepartment([
+    ...bestsellers.results,
+    ...newest.results,
+  ]);
 
   return (
     <>
@@ -95,91 +103,58 @@ export default async function HomePage({
         }}
       />
 
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_end,rgba(180,83,42,0.16),transparent_42%)]" />
-        <div className="mx-auto grid max-w-site items-end gap-12 px-4 pb-20 pt-16 sm:px-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <div>
-            <p className="reveal text-xs uppercase tracking-[0.35em] text-accent">
-              {t('eyebrow')}
-            </p>
-            <h1 className="reveal reveal-delay-1 mt-4 max-w-3xl text-4xl leading-[1.08] sm:text-6xl">
-              {t('title')}
-            </h1>
-            <p className="reveal reveal-delay-2 mt-6 max-w-xl text-lg leading-8 text-muted">
-              {t('subtitle')}
-            </p>
-            <div className="reveal reveal-delay-3 mt-10 flex flex-wrap items-center gap-5">
-              <Link href={shopHref} className="btn-live">
-                {t('shop')}
-              </Link>
-              <p className="text-sm text-muted">{t('ctaNote')}</p>
-            </div>
-          </div>
-          <div className="reveal reveal-delay-4 float-slow hidden aspect-[4/5] border border-sand bg-white/40 p-4 lg:block">
-            <div className="flex h-full flex-col justify-between bg-[linear-gradient(160deg,#e8dfd3_0%,#f7f3ee_48%,#dcc7b3_100%)] p-8">
-              <p className="text-xs uppercase tracking-[0.4em] text-accent">
-                {t('lookbook')}
-              </p>
-              <p className="max-w-xs text-3xl leading-tight">
-                {newest.results[0]
-                  ? localizedName(newest.results[0], typedLocale)
-                  : t('newArrivals')}
-              </p>
-              <p className="text-sm text-muted">{site.address}</p>
-            </div>
-          </div>
-        </div>
+      <section className="mx-auto max-w-site px-4 pb-4 pt-10 sm:px-6">
+        <p className="reveal text-xs uppercase tracking-[0.28em] text-accent">
+          {t('eyebrow')}
+        </p>
+        <h1 className="reveal reveal-delay-1 mt-3 text-3xl leading-tight sm:text-4xl">
+          {t('title')}
+        </h1>
+        <p className="reveal reveal-delay-2 mt-3 max-w-xl text-base leading-7 text-muted">
+          {t('subtitle')}
+        </p>
       </section>
 
-      <Marquee
-        items={[
-          t('ticker1'),
-          t('ticker2'),
-          t('ticker3'),
-          t('ticker4'),
-          t('ticker5'),
-        ]}
-      />
-
-      {departments.results.length > 0 ? (
-        <section className="mx-auto max-w-site px-4 py-20 sm:px-6">
+      {visibleDepartments.length > 0 ? (
+        <section className="mx-auto max-w-site px-4 py-10 sm:px-6">
           <Reveal>
-            <h2 className="mb-8 text-2xl">{t('departments')}</h2>
+            <h2 className="mb-5 text-xl">{t('departments')}</h2>
           </Reveal>
-          <div className="grid gap-4 sm:grid-cols-3">
-            {departments.results.map((department, index) => (
-              <Reveal key={department.id} delay={index * 90}>
-                <Link
-                  href={`/${localizedSlug(department, typedLocale)}`}
-                  className="group block border border-sand bg-white/50 px-6 py-12 text-xl transition duration-500 hover:-translate-y-1 hover:border-accent hover:shadow-[0_24px_50px_rgba(43,43,43,0.08)]"
-                >
-                  <span className="block text-xs uppercase tracking-[0.3em] text-accent">
-                    0{index + 1}
-                  </span>
-                  <span className="mt-4 block">{localizedName(department, typedLocale)}</span>
-                </Link>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 lg:gap-4">
+            {visibleDepartments.map((department, index) => (
+              <Reveal key={department.id} delay={index * 50}>
+                <DepartmentCard
+                  department={department}
+                  locale={typedLocale}
+                  imageUrl={covers.get(department.id)}
+                  priority={index < 4}
+                />
               </Reveal>
             ))}
           </div>
         </section>
       ) : (
-        <section className="mx-auto max-w-site px-4 py-20 sm:px-6">
-          <p className="border border-sand bg-white/40 px-6 py-16 text-center text-muted">
+        <section className="mx-auto max-w-site px-4 py-16 sm:px-6">
+          <p className="border border-sand bg-white/40 px-6 py-12 text-center text-muted">
             {t('empty')}
           </p>
         </section>
       )}
 
-      <section className="mx-auto max-w-site px-4 pb-20 sm:px-6">
+      <section className="mx-auto max-w-site px-4 pb-12 sm:px-6">
         <Reveal>
-          <h2 className="mb-10 text-2xl">{t('bestsellers')}</h2>
+          <h2 className="mb-5 text-xl">{t('bestsellers')}</h2>
         </Reveal>
         {bestsellers.results.length ? (
-          <div className="grid grid-cols-1 gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
-            {bestsellers.results.slice(0, 3).map((product, index) => (
-              <Reveal key={product.id} delay={index * 80}>
-                <ProductCard product={product} priority={index === 0} />
-              </Reveal>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-4">
+            {bestsellers.results.slice(0, 4).map((product, index) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                compact
+                priority={index === 0}
+                delay={index * 50}
+              />
             ))}
           </div>
         ) : (
@@ -190,28 +165,16 @@ export default async function HomePage({
       {newest.results.length > 0 ? (
         <section className="mx-auto max-w-site px-4 pb-20 sm:px-6">
           <Reveal>
-            <h2 className="mb-10 text-2xl">{t('newArrivals')}</h2>
+            <h2 className="mb-5 text-xl">{t('newArrivals')}</h2>
           </Reveal>
-          <div className="grid grid-cols-1 gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
-            {newest.results.slice(0, 6).map((product, index) => (
-              <Reveal key={product.id} delay={index * 60}>
-                <ProductCard product={product} />
-              </Reveal>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      {saleItems.length > 0 ? (
-        <section className="mx-auto max-w-site px-4 pb-24 sm:px-6">
-          <Reveal>
-            <h2 className="mb-10 text-2xl">{t('sale')}</h2>
-          </Reveal>
-          <div className="grid grid-cols-1 gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
-            {saleItems.map((product, index) => (
-              <Reveal key={product.id} delay={index * 80}>
-                <ProductCard product={product} />
-              </Reveal>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-4">
+            {newest.results.slice(0, 8).map((product, index) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                compact
+                delay={index * 40}
+              />
             ))}
           </div>
         </section>

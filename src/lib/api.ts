@@ -1,17 +1,41 @@
 import { apiUrl } from './site';
 import { ApiError, authGet, authSend, publicGet, setTokens } from './http';
 import type {
+  AppNotification,
   AuthTokens,
+  Brand,
   Cart,
   Category,
+  Color,
   Department,
+  Favorite,
   Locale,
   Order,
   Paginated,
   Product,
+  ProductQuery,
+  Season,
+  Size,
   SitemapPayload,
   User,
 } from './types';
+
+export const emptyPage = <T,>(limit = 12): Paginated<T> => ({
+  results: [],
+  page: 1,
+  limit,
+  total: 0,
+  totalPages: 0,
+});
+
+function setQuery(params: Record<string, string | number | undefined>) {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined || value === '') continue;
+    query.set(key, String(value));
+  }
+  return query;
+}
 
 export function getDepartments() {
   return publicGet<Paginated<Department>>('/departments?limit=50');
@@ -28,10 +52,11 @@ export function getCategories(params: {
   locale?: Locale;
   limit?: number;
 }) {
-  const query = new URLSearchParams();
-  if (params.department_slug) query.set('department_slug', params.department_slug);
-  if (params.locale) query.set('locale', params.locale);
-  query.set('limit', String(params.limit || 50));
+  const query = setQuery({
+    department_slug: params.department_slug,
+    locale: params.locale,
+    limit: params.limit || 50,
+  });
   return publicGet<Paginated<Category>>(`/categories?${query.toString()}`);
 }
 
@@ -45,23 +70,22 @@ export function getCategoryBySlug(
   );
 }
 
-export function getProducts(params: {
-  locale?: Locale;
-  department_slug?: string;
-  category_slug?: string;
-  sort?: 'best_selling' | 'newest';
-  search?: string;
-  limit?: number;
-  page?: number;
-}) {
-  const query = new URLSearchParams();
-  if (params.locale) query.set('locale', params.locale);
-  if (params.department_slug) query.set('department_slug', params.department_slug);
-  if (params.category_slug) query.set('category_slug', params.category_slug);
-  if (params.sort) query.set('sort', params.sort);
-  if (params.search) query.set('search', params.search);
-  query.set('limit', String(params.limit || 12));
-  query.set('page', String(params.page || 1));
+export function getProducts(params: ProductQuery = {}) {
+  const query = setQuery({
+    locale: params.locale,
+    department_slug: params.department_slug,
+    category_slug: params.category_slug,
+    sort: params.sort,
+    search: params.search,
+    min_price: params.min_price,
+    max_price: params.max_price,
+    color_id: params.color_id,
+    size_id: params.size_id,
+    brand_id: params.brand_id,
+    season_id: params.season_id,
+    limit: params.limit || 12,
+    page: params.page || 1,
+  });
   return publicGet<Paginated<Product>>(`/products?${query.toString()}`);
 }
 
@@ -69,6 +93,22 @@ export function getProductBySlug(locale: Locale, slug: string) {
   return publicGet<Product>(
     `/products/slug/${locale}/${encodeURIComponent(slug)}`,
   );
+}
+
+export function getColors(limit = 50) {
+  return publicGet<Paginated<Color>>(`/colors?limit=${limit}`);
+}
+
+export function getSizes(limit = 50) {
+  return publicGet<Paginated<Size>>(`/sizes?limit=${limit}`);
+}
+
+export function getBrands(limit = 50) {
+  return publicGet<Paginated<Brand>>(`/brands?limit=${limit}`);
+}
+
+export function getSeasons(limit = 50) {
+  return publicGet<Paginated<Season>>(`/seasons?limit=${limit}`);
 }
 
 export function getSitemapData() {
@@ -157,8 +197,30 @@ export function createOrder(payload: {
   return authSend<Order>('/orders', 'POST', payload);
 }
 
+export function getFavorites(limit = 50) {
+  return authGet<Paginated<Favorite>>(`/favorites?limit=${limit}`);
+}
+
 export function toggleFavorite(product_id: string) {
-  return authSend<{ favorited: boolean }>('/favorites/toggle', 'POST', {
-    product_id,
+  return authSend<{ favorited: boolean; product_id?: string; favorite?: Favorite }>(
+    '/favorites/toggle',
+    'POST',
+    { product_id },
+  );
+}
+
+export function removeFavorite(id: string) {
+  return authSend<{ id: string }>(`/favorites/${id}`, 'DELETE');
+}
+
+export function getNotifications(params: { limit?: number; is_read?: boolean } = {}) {
+  const query = setQuery({
+    limit: params.limit || 50,
+    is_read: params.is_read === undefined ? undefined : String(params.is_read),
   });
+  return authGet<Paginated<AppNotification>>(`/notifications?${query.toString()}`);
+}
+
+export function markNotificationRead(id: string) {
+  return authSend<AppNotification>(`/notifications/${id}/read`, 'PATCH', {});
 }

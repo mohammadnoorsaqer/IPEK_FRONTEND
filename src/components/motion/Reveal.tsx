@@ -18,6 +18,11 @@ export function Reveal({
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) {
+      setVisible(true);
+      return;
+    }
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -35,7 +40,7 @@ export function Reveal({
     <div
       ref={ref}
       className={clsx(
-        'transition duration-700 ease-out',
+        'transition duration-700 ease-out motion-reduce:translate-y-0 motion-reduce:opacity-100 motion-reduce:transition-none',
         visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0',
         className,
       )}

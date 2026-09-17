@@ -1,13 +1,14 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import { formatPrice } from '@/lib/format';
 import { localizedName, localizedSlug, type Locale, type Product } from '@/lib/types';
 import { useCart, productToCartItem } from '@/components/cart/CartProvider';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { Link } from '@/i18n/navigation';
+import { MediaFrame } from '@/components/media/MediaFrame';
+import { FavoriteButton } from '@/components/favorites/FavoriteButton';
 
 export function ProductDetail({ product }: { product: Product }) {
   const locale = useLocale() as Locale;
@@ -50,34 +51,28 @@ export function ProductDetail({ product }: { product: Product }) {
   return (
     <div className="mx-auto grid max-w-site gap-10 px-4 py-10 sm:px-6 lg:grid-cols-2 lg:gap-16">
       <div>
-        <div className="relative aspect-[4/5] overflow-hidden bg-sand">
-          {hero?.image_url ? (
-            <Image
-              src={hero.image_url}
-              alt={localizedName(product, locale)}
-              fill
-              priority
-              sizes="(min-width: 1024px) 45vw, 100vw"
-              className="object-cover transition duration-700 ease-out"
-            />
-          ) : (
-            <div className="absolute inset-0 bg-[linear-gradient(160deg,#e8dfd3,#f7f3ee)]" />
-          )}
+        <div className="relative">
+          <MediaFrame
+            src={hero?.image_url}
+            alt={localizedName(product, locale)}
+            aspect="aspect-[4/5]"
+            priority
+            sizes="(min-width: 1024px) 45vw, 100vw"
+          />
+          <div className="absolute end-3 top-3 z-10">
+            <FavoriteButton productId={product.id} />
+          </div>
         </div>
         {images.length > 1 ? (
           <div className="mt-4 grid grid-cols-4 gap-3">
             {images.slice(0, 4).map((image) => (
-              <div key={image.id} className="relative aspect-square bg-sand">
-                {image.image_url ? (
-                  <Image
-                    src={image.image_url}
-                    alt=""
-                    fill
-                    sizes="120px"
-                    className="object-cover"
-                  />
-                ) : null}
-              </div>
+              <MediaFrame
+                key={image.id}
+                src={image.image_url}
+                alt=""
+                aspect="aspect-square"
+                sizes="120px"
+              />
             ))}
           </div>
         ) : null}
@@ -205,15 +200,13 @@ export function ProductDetail({ product }: { product: Product }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4">
           <div className="max-w-md bg-cream p-8">
             <h2 className="text-xl">{t('sizeGuide')}</h2>
-            <p className="mt-4 text-sm leading-7 text-muted">
-              XS 0–2 · S 4–6 · M 8–10 · L 12–14 · XL 16
-            </p>
+            <p className="mt-4 text-sm leading-7 text-muted">{t('sizeGuideBody')}</p>
             <button
               type="button"
               className="mt-6 text-sm underline"
               onClick={() => setGuideOpen(false)}
             >
-              OK
+              {t('close')}
             </button>
           </div>
         </div>

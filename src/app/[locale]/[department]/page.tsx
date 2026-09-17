@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { getCategories, getDepartmentBySlug, getProducts, getSitemapData } from '@/lib/api';
+import { emptyPage, getCategories, getDepartmentBySlug, getProducts, getSitemapData } from '@/lib/api';
 import { safeFetch } from '@/lib/safe';
 import { localizedName, type Locale } from '@/lib/types';
 import { JsonLd } from '@/components/seo/JsonLd';
@@ -14,6 +14,8 @@ import {
   reservedDepartmentSlugs,
 } from '@/lib/paths';
 import { site } from '@/lib/site';
+import { parseListingSearch, toProductQuery, type ListingSearch } from '@/lib/listing';
+import { getFilterFacets } from '@/lib/listing-data';
 
 export const revalidate = 300;
 export const dynamicParams = true;
@@ -52,8 +54,8 @@ export async function generateMetadata({
 
   const name = localizedName(item, locale as Locale);
   const t = await getTranslations({ locale, namespace: 'home' });
-  const title = `${name} · ${site.name}`;
-  const description = `${t('eyebrow')} — ${name}`;
+  const title = name;
+  const description = `${t('eyebrow')}. ${name}.`;
   const en = departmentPath('en', item);
   const ar = departmentPath('ar', item);
 
@@ -76,27 +78,26 @@ export default async function DepartmentPage({
   searchParams,
 }: {
   params: Promise<{ locale: string; department: string }>;
-  searchParams: Promise<{ sort?: string }>;
+  searchParams: Promise<ListingSearch>;
 }) {
   const { locale, department } = await params;
-  const { sort: sortParam } = await searchParams;
+  const search = await searchParams;
   setRequestLocale(locale);
   const typedLocale = locale as Locale;
-  const sort = sortParam === 'best_selling' ? 'best_selling' : 'newest';
+  const listing = parseListingSearch(search);
 
   const departmentItem = await getDepartmentBySlug(typedLocale, department).catch(
     () => null,
   );
   if (!departmentItem) notFound();
 
-  const emptyList = {
-    results: [],
-    page: 1,
+  const productQuery = toProductQuery(listing, {
+    locale: typedLocale,
+    department_slug: department,
     limit: 12,
-    total: 0,
-    totalPages: 0,
-  };
-  const [categories, products, t] = await Promise.all([
+  });
+
+  const [categories, products, facets, t] = await Promise.all([
     safeFetch(
       () =>
         getCategories({
@@ -104,18 +105,10 @@ export default async function DepartmentPage({
           locale: typedLocale,
           limit: 50,
         }),
-      emptyList,
+      emptyPage(50),
     ),
-    safeFetch(
-      () =>
-        getProducts({
-          locale: typedLocale,
-          department_slug: department,
-          sort,
-          limit: 12,
-        }),
-      emptyList,
-    ),
+    safeFetch(() => getProducts(productQuery), emptyPage(12)),
+    getFilterFacets(),
     getTranslations('home'),
   ]);
 
@@ -148,23 +141,39 @@ export default async function DepartmentPage({
         }}
       />
       <div className="mx-auto max-w-site px-4 py-10 sm:px-6">
-        <h1 className="mb-10 text-4xl">{name}</h1>
-        <div className="grid gap-10 lg:grid-cols-[16rem_1fr]">
+        <h1 className="mb-6 text-3xl">{name}</h1>
+        <div className="grid gap-8 lg:grid-cols-[15.5rem_1fr]">
           <ListingFilters
             locale={typedLocale}
             departmentSlug={department}
             categories={categories.results}
-            sort={sort}
+            colors={facets.colors}
+            sizes={facets.sizes}
+            brands={facets.brands}
+            seasons={facets.seasons}
+            values={listing}
           />
           <ProductGrid
-            key={`${department}-${sort}`}
+            key={`${department}-${listingQueryKey(listing)}`}
             locale={typedLocale}
-            departmentSlug={department}
-            sort={sort}
+            query={productQuery}
             initialProducts={products.results}
+            compact
           />
         </div>
       </div>
     </>
   );
+}
+
+function listingQueryKey(listing: ReturnType<typeof parseListingSearch>) {
+  return [
+    listing.sort,
+    listing.min_price,
+    listing.max_price,
+    listing.color_id,
+    listing.size_id,
+    listing.brand_id,
+    listing.season_id,
+  ].join('-');
 }

@@ -40,8 +40,9 @@ export default async function SearchPage({
       <div className="mt-12">
         <ProductGrid
           locale={typedLocale}
-          search={query || undefined}
+          query={{ search: query || undefined }}
           initialProducts={products.results}
+          compact
         />
       </div>
     </div>

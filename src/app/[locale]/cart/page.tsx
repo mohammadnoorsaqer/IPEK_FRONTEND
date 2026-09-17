@@ -1,12 +1,12 @@
 'use client';
 
-import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useCart } from '@/components/cart/CartProvider';
 import { formatPrice } from '@/lib/format';
 import type { Locale } from '@/lib/types';
+import { MediaFrame } from '@/components/media/MediaFrame';
 
 export default function CartPage() {
   const t = useTranslations('cart');
@@ -60,11 +60,13 @@ export default function CartPage() {
       <ul className="mt-10 divide-y divide-sand">
         {items.map((item) => (
           <li key={item.id || `${item.productId}-${item.variantId}`} className="flex gap-5 py-6">
-            <div className="relative h-28 w-20 shrink-0 overflow-hidden bg-sand">
-              {item.image ? (
-                <Image src={item.image} alt="" fill className="object-cover" sizes="80px" />
-              ) : null}
-            </div>
+            <MediaFrame
+              src={item.image}
+              alt={locale === 'ar' ? item.name_ar : item.name_en}
+              aspect=""
+              className="h-28 w-20 shrink-0"
+              sizes="80px"
+            />
             <div className="flex flex-1 items-start justify-between gap-4">
               <div>
                 <Link href={`/products/${locale === 'ar' ? item.slug_ar : item.slug_en}`}>

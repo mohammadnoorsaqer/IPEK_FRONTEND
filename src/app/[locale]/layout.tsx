@@ -7,6 +7,8 @@ import { routing } from '@/i18n/routing';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { AuthProvider } from '@/components/auth/AuthProvider';
 import { CartProvider } from '@/components/cart/CartProvider';
+import { FavoritesProvider } from '@/components/favorites/FavoritesProvider';
+import { NotificationsProvider } from '@/components/notifications/NotificationsProvider';
 import { AlternateLinksProvider } from '@/components/i18n/AlternateLinks';
 import { SiteHeader } from '@/components/layout/SiteHeader';
 import { Footer } from '@/components/layout/Footer';
@@ -68,12 +70,16 @@ export default async function LocaleLayout({
           <QueryProvider>
             <AuthProvider>
               <CartProvider>
-                <AlternateLinksProvider>
-                  <SiteHeader />
-                  <main>{children}</main>
-                  <Footer />
-                  <WhatsAppButton />
-                </AlternateLinksProvider>
+                <FavoritesProvider>
+                  <NotificationsProvider>
+                    <AlternateLinksProvider>
+                      <SiteHeader />
+                      <main>{children}</main>
+                      <Footer />
+                      <WhatsAppButton />
+                    </AlternateLinksProvider>
+                  </NotificationsProvider>
+                </FavoritesProvider>
               </CartProvider>
             </AuthProvider>
           </QueryProvider>
