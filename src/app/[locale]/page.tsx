@@ -1,16 +1,19 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { getDepartments, getProducts } from '@/lib/api';
+import { getBrands, getDepartments, getProducts } from '@/lib/api';
 import { safeFetch } from '@/lib/safe';
 import { site } from '@/lib/site';
 import { type Locale, type Product } from '@/lib/types';
 import { ProductCard } from '@/components/product/ProductCard';
 import { DepartmentCard } from '@/components/catalog/DepartmentCard';
+import { BrandCard } from '@/components/catalog/BrandCard';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { AlternateLinks } from '@/components/i18n/AlternateLinks';
 import { absoluteUrl, languageAlternates } from '@/lib/paths';
 import { Reveal } from '@/components/motion/Reveal';
 import { primaryImageUrl } from '@/components/media/MediaFrame';
+import { ClothesScene } from '@/components/home/ClothesScene';
+import { HomeFeatures, HomeHelp } from '@/components/home/HomeExtras';
 
 export const revalidate = 300;
 
@@ -48,6 +51,18 @@ function coverByDepartment(products: Product[]) {
   return covers;
 }
 
+function coverByBrand(products: Product[]) {
+  const covers = new Map<string, string>();
+  for (const product of products) {
+    const brandId = product.brand?.id;
+    const image = primaryImageUrl(product.images);
+    if (brandId && image && !covers.has(brandId)) {
+      covers.set(brandId, image);
+    }
+  }
+  return covers;
+}
+
 export default async function HomePage({
   params,
 }: {
@@ -58,8 +73,15 @@ export default async function HomePage({
   const typedLocale = locale as Locale;
   const t = await getTranslations('home');
 
-  const [departments, bestsellers, newest] = await Promise.all([
+  const [departments, brands, bestsellers, newest] = await Promise.all([
     safeFetch(getDepartments, {
+      results: [],
+      page: 1,
+      limit: 50,
+      total: 0,
+      totalPages: 0,
+    }),
+    safeFetch(() => getBrands(50), {
       results: [],
       page: 1,
       limit: 50,
@@ -83,6 +105,10 @@ export default async function HomePage({
     ...bestsellers.results,
     ...newest.results,
   ]);
+  const brandCovers = coverByBrand([
+    ...bestsellers.results,
+    ...newest.results,
+  ]);
 
   return (
     <>
@@ -103,22 +129,27 @@ export default async function HomePage({
         }}
       />
 
-      <section className="mx-auto max-w-site px-4 pb-4 pt-10 sm:px-6">
-        <p className="reveal text-xs uppercase tracking-[0.28em] text-accent">
-          {t('eyebrow')}
-        </p>
-        <h1 className="reveal reveal-delay-1 mt-3 text-3xl leading-tight sm:text-4xl">
-          {t('title')}
-        </h1>
-        <p className="reveal reveal-delay-2 mt-3 max-w-xl text-base leading-7 text-muted">
-          {t('subtitle')}
-        </p>
+      <section className="mx-auto grid max-w-site items-center gap-8 px-4 pb-6 pt-10 sm:px-6 lg:grid-cols-[1.05fr_0.95fr]">
+        <div>
+          <p className="reveal text-xs uppercase tracking-[0.28em] text-accent">
+            {t('eyebrow')}
+          </p>
+          <h1 className="reveal reveal-delay-1 mt-3 text-4xl font-semibold leading-tight sm:text-5xl">
+            {t('title')}
+          </h1>
+          <p className="reveal reveal-delay-2 mt-4 max-w-xl text-lg font-medium leading-8 text-ink/80">
+            {t('subtitle')}
+          </p>
+        </div>
+        <div className="reveal reveal-delay-3">
+          <ClothesScene />
+        </div>
       </section>
 
       {visibleDepartments.length > 0 ? (
         <section className="mx-auto max-w-site px-4 py-10 sm:px-6">
           <Reveal>
-            <h2 className="mb-5 text-xl">{t('departments')}</h2>
+            <h2 className="mb-5 text-2xl font-semibold">{t('departments')}</h2>
           </Reveal>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 lg:gap-4">
             {visibleDepartments.map((department, index) => (
@@ -141,9 +172,31 @@ export default async function HomePage({
         </section>
       )}
 
+      <HomeFeatures />
+
+      {brands.results.length > 0 ? (
+        <section className="mx-auto max-w-site px-4 pb-12 sm:px-6">
+          <Reveal>
+            <h2 className="mb-5 text-2xl font-semibold">{t('brands')}</h2>
+          </Reveal>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 lg:gap-4">
+            {brands.results.map((brand, index) => (
+              <Reveal key={brand.id} delay={index * 40}>
+                <BrandCard
+                  brand={brand}
+                  locale={typedLocale}
+                  imageUrl={brandCovers.get(brand.id)}
+                  priority={index < 4}
+                />
+              </Reveal>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       <section className="mx-auto max-w-site px-4 pb-12 sm:px-6">
         <Reveal>
-          <h2 className="mb-5 text-xl">{t('bestsellers')}</h2>
+          <h2 className="mb-5 text-2xl font-semibold">{t('bestsellers')}</h2>
         </Reveal>
         {bestsellers.results.length ? (
           <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-4">
@@ -165,7 +218,7 @@ export default async function HomePage({
       {newest.results.length > 0 ? (
         <section className="mx-auto max-w-site px-4 pb-20 sm:px-6">
           <Reveal>
-            <h2 className="mb-5 text-xl">{t('newArrivals')}</h2>
+            <h2 className="mb-5 text-2xl font-semibold">{t('newArrivals')}</h2>
           </Reveal>
           <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-4">
             {newest.results.slice(0, 8).map((product, index) => (
@@ -179,6 +232,8 @@ export default async function HomePage({
           </div>
         </section>
       ) : null}
+
+      <HomeHelp />
     </>
   );
 }

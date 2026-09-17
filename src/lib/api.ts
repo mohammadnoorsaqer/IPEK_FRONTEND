@@ -1,5 +1,5 @@
 import { apiUrl } from './site';
-import { ApiError, authGet, authSend, publicGet, setTokens } from './http';
+import { ApiError, authGet, authSend, publicGet, publicSend, setTokens } from './http';
 import type {
   AppNotification,
   AuthTokens,
@@ -49,13 +49,15 @@ export function getDepartmentBySlug(locale: Locale, slug: string) {
 
 export function getCategories(params: {
   department_slug?: string;
+  department_id?: string;
   locale?: Locale;
   limit?: number;
 }) {
   const query = setQuery({
     department_slug: params.department_slug,
+    department_id: params.department_id,
     locale: params.locale,
-    limit: params.limit || 50,
+    limit: params.limit || 100,
   });
   return publicGet<Paginated<Category>>(`/categories?${query.toString()}`);
 }
@@ -99,12 +101,17 @@ export function getColors(limit = 50) {
   return publicGet<Paginated<Color>>(`/colors?limit=${limit}`);
 }
 
-export function getSizes(limit = 50) {
-  return publicGet<Paginated<Size>>(`/sizes?limit=${limit}`);
+export function getSizes(limit = 50, size_group?: string) {
+  const query = setQuery({ limit, size_group });
+  return publicGet<Paginated<Size>>(`/sizes?${query.toString()}`);
 }
 
 export function getBrands(limit = 50) {
   return publicGet<Paginated<Brand>>(`/brands?limit=${limit}`);
+}
+
+export function getBrand(id: string) {
+  return publicGet<Brand>(`/brands/${id}`);
 }
 
 export function getSeasons(limit = 50) {
@@ -195,6 +202,16 @@ export function createOrder(payload: {
   payment_method: 'cliq' | 'cash';
 }) {
   return authSend<Order>('/orders', 'POST', payload);
+}
+
+export function createGuestOrder(payload: {
+  guest_username: string;
+  guest_whatsapp_number: string;
+  street_address: string;
+  payment_method: 'cliq' | 'cash';
+  items: { product_variant_id: string; quantity: number }[];
+}) {
+  return publicSend<Order>('/orders/guest', 'POST', payload);
 }
 
 export function getFavorites(limit = 50) {

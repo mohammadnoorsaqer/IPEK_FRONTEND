@@ -10,6 +10,8 @@ export const reservedDepartmentSlugs = new Set([
   'search',
   'login',
   'register',
+  'brands',
+  'favorites',
 ]);
 
 export function localePath(locale: Locale, pathname = '') {

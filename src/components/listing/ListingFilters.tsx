@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { listingHref, type ListingValues } from '@/lib/listing';
+import { groupCategories } from '@/lib/listing-data';
 import {
   localizedName,
   localizedSlug,
@@ -59,6 +60,7 @@ export function ListingFilters({
     values.sort !== 'newest';
 
   const nextValues = useMemo(() => values, [values]);
+  const categoryGroups = useMemo(() => groupCategories(categories), [categories]);
 
   function go(partial: Partial<ListingValues>) {
     router.replace(listingHref(pathname, { ...nextValues, ...partial }));
@@ -87,23 +89,48 @@ export function ListingFilters({
 
       <section>
         <p className="mb-2 text-sm">{t('category')}</p>
-        <div className="flex flex-wrap gap-2">
+        <div className="space-y-3">
           <Link
             href={listingHref(`/${departmentSlug}`, { ...values })}
             className={chipClass(!categorySlug)}
           >
             {t('all')}
           </Link>
-          {categories.map((category) => {
-            const slug = localizedSlug(category, locale);
+          {categoryGroups.parents.map((parent) => {
+            const slug = localizedSlug(parent, locale);
+            const children = categoryGroups.childrenByParent.get(parent.id) || [];
+            const childActive = children.some(
+              (child) => localizedSlug(child, locale) === categorySlug,
+            );
+            const parentActive = categorySlug === slug;
+            const open = parentActive || childActive;
             return (
-              <Link
-                key={category.id}
-                href={listingHref(`/${departmentSlug}/${slug}`, { ...values })}
-                className={chipClass(categorySlug === slug)}
-              >
-                {localizedName(category, locale)}
-              </Link>
+              <div key={parent.id}>
+                <Link
+                  href={listingHref(`/${departmentSlug}/${slug}`, { ...values })}
+                  className={chipClass(parentActive || childActive)}
+                >
+                  {localizedName(parent, locale)}
+                </Link>
+                {open && children.length > 0 ? (
+                  <div className="mt-2 flex flex-wrap gap-2 ps-1">
+                    {children.map((child) => {
+                      const childSlug = localizedSlug(child, locale);
+                      return (
+                        <Link
+                          key={child.id}
+                          href={listingHref(`/${departmentSlug}/${childSlug}`, {
+                            ...values,
+                          })}
+                          className={chipClass(categorySlug === childSlug)}
+                        >
+                          {localizedName(child, locale)}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                ) : null}
+              </div>
             );
           })}
         </div>

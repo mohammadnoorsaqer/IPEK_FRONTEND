@@ -40,6 +40,7 @@ export type Category = {
   slug_en: string;
   slug_ar: string;
   department_id: string;
+  parent_id?: string | null;
   department?: Department;
 };
 
@@ -58,6 +59,17 @@ export type ProductVariant = {
   color?: { id: string; name_en: string; name_ar: string; hex_code: string };
   size?: { id: string; code: string; name_en: string; name_ar: string };
 };
+
+export type NamedItem = {
+  id: string;
+  name_en: string;
+  name_ar: string;
+};
+
+export type Color = NamedItem & { hex_code: string };
+export type Size = NamedItem & { code: string; size_group?: string };
+export type Brand = NamedItem;
+export type Season = NamedItem;
 
 export type Product = {
   id: string;
@@ -79,18 +91,8 @@ export type Product = {
   images?: ProductImage[];
   variants?: ProductVariant[];
   category?: Category;
+  brand?: Brand;
 };
-
-export type NamedItem = {
-  id: string;
-  name_en: string;
-  name_ar: string;
-};
-
-export type Color = NamedItem & { hex_code: string };
-export type Size = NamedItem & { code: string; size_group?: string };
-export type Brand = NamedItem;
-export type Season = NamedItem;
 
 export type ProductQuery = {
   locale?: Locale;

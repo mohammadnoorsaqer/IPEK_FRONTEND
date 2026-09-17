@@ -15,7 +15,11 @@ import {
 } from '@/lib/paths';
 import { site } from '@/lib/site';
 import { parseListingSearch, toProductQuery, type ListingSearch } from '@/lib/listing';
-import { getFilterFacets } from '@/lib/listing-data';
+import {
+  categoriesForDepartment,
+  getFilterFacets,
+  sizeGroupForDepartment,
+} from '@/lib/listing-data';
 
 export const revalidate = 300;
 export const dynamicParams = true;
@@ -101,18 +105,23 @@ export default async function DepartmentPage({
     safeFetch(
       () =>
         getCategories({
+          department_id: departmentItem.id,
           department_slug: department,
           locale: typedLocale,
-          limit: 50,
+          limit: 100,
         }),
-      emptyPage(50),
+      emptyPage(100),
     ),
     safeFetch(() => getProducts(productQuery), emptyPage(12)),
-    getFilterFacets(),
+    getFilterFacets(sizeGroupForDepartment(departmentItem)),
     getTranslations('home'),
   ]);
 
   const name = localizedName(departmentItem, typedLocale);
+  const departmentCategories = categoriesForDepartment(
+    categories.results,
+    departmentItem.id,
+  );
 
   return (
     <>
@@ -146,7 +155,7 @@ export default async function DepartmentPage({
           <ListingFilters
             locale={typedLocale}
             departmentSlug={department}
-            categories={categories.results}
+            categories={departmentCategories}
             colors={facets.colors}
             sizes={facets.sizes}
             brands={facets.brands}

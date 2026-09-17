@@ -134,15 +134,175 @@ body {
 @keyframes pulse-soft {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(180, 83, 42, 0.35);
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.45);
   }
   70% {
-    box-shadow: 0 0 0 14px rgba(180, 83, 42, 0);
+    box-shadow: 0 0 0 14px rgba(37, 211, 102, 0);
   }
 }
 
 .whatsapp-live {
   animation: pulse-soft 2.4s ease-out infinite;
+}
+
+.clothes-story {
+  min-height: 268px;
+}
+
+.story-scene {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  opacity: 0;
+  animation: story-cycle 12s ease-in-out infinite;
+}
+
+.story-scene-pick {
+  animation-delay: 0s;
+  opacity: 1;
+}
+
+.story-scene-ship {
+  animation-delay: 4s;
+}
+
+.story-scene-wear {
+  animation-delay: 8s;
+}
+
+.story-caption {
+  padding: 0 1rem 1rem;
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.story-dress-idle {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  animation: garment-sway 3.8s ease-in-out infinite;
+}
+
+.story-dress-lift {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  animation: dress-lift 4s ease-in-out infinite;
+}
+
+.story-hand {
+  animation: hand-reach 4s ease-in-out infinite;
+}
+
+.story-truck {
+  animation: truck-drive 4s ease-in-out infinite;
+}
+
+.story-box {
+  transform-origin: 125px 144px;
+  animation: box-bounce 4s ease-in-out infinite;
+}
+
+.story-heart {
+  animation: heart-float 4s ease-in-out infinite;
+}
+
+.story-heart-delay {
+  animation-delay: 0.6s;
+}
+
+@keyframes story-cycle {
+  0%,
+  28% {
+    opacity: 1;
+    transform: none;
+  }
+  33%,
+  100% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes garment-sway {
+  0%,
+  100% {
+    transform: rotate(-2.6deg);
+  }
+  50% {
+    transform: rotate(2.8deg);
+  }
+}
+
+@keyframes dress-lift {
+  0%,
+  18% {
+    transform: translateY(0) scale(1);
+  }
+  42%,
+  70% {
+    transform: translateY(-14px) scale(1.06);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes hand-reach {
+  0%,
+  12% {
+    transform: translate(8px, 18px);
+    opacity: 0.3;
+  }
+  38%,
+  62% {
+    transform: translate(-6px, -10px);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(8px, 18px);
+    opacity: 0.3;
+  }
+}
+
+@keyframes truck-drive {
+  0% {
+    transform: translateX(-28px);
+    opacity: 0;
+  }
+  22%,
+  62% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(56px);
+    opacity: 0;
+  }
+}
+
+@keyframes box-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes heart-float {
+  0%,
+  100% {
+    transform: translateY(8px) scale(0.86);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translateY(-10px) scale(1.08);
+    opacity: 1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -151,11 +311,29 @@ body {
   .float-slow,
   .btn-live::after,
   .whatsapp-live,
+  .garment,
+  .story-scene,
+  .story-dress-idle,
+  .story-dress-lift,
+  .story-hand,
+  .story-truck,
+  .story-box,
+  .story-heart,
   .group:hover .media-frame img,
   .group:hover .media-frame .next-image {
     animation: none !important;
     opacity: 1;
     transform: none;
+  }
+
+  .clothes-story {
+    display: grid;
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .story-scene {
+    position: relative;
   }
 }
 

@@ -2,7 +2,6 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
-import { useAuth } from '@/components/auth/AuthProvider';
 import { useCart } from '@/components/cart/CartProvider';
 import { formatPrice } from '@/lib/format';
 import type { Locale } from '@/lib/types';
@@ -10,25 +9,8 @@ import { MediaFrame } from '@/components/media/MediaFrame';
 
 export default function CartPage() {
   const t = useTranslations('cart');
-  const authT = useTranslations('auth');
   const locale = useLocale() as Locale;
-  const { user, ready } = useAuth();
   const { items, removeItem, setQuantity, total, loading } = useCart();
-
-  if (ready && !user) {
-    return (
-      <div className="mx-auto max-w-xl px-4 py-20 sm:px-6">
-        <h1 className="text-3xl">{t('title')}</h1>
-        <p className="mt-6 text-muted">{t('loginRequired')}</p>
-        <Link
-          href="/login?next=/cart"
-          className="mt-8 inline-block bg-ink px-8 py-3 text-xs uppercase tracking-[0.25em] text-cream"
-        >
-          {authT('login')}
-        </Link>
-      </div>
-    );
-  }
 
   if (loading && !items.length) {
     return (
@@ -45,8 +27,8 @@ export default function CartPage() {
   if (!items.length) {
     return (
       <div className="mx-auto max-w-site px-4 py-20 sm:px-6">
-        <h1 className="text-3xl">{t('title')}</h1>
-        <p className="mt-6 text-muted">{t('empty')}</p>
+        <h1 className="text-3xl font-semibold">{t('title')}</h1>
+        <p className="mt-6 text-base font-medium text-ink/80">{t('empty')}</p>
         <Link href="/" className="mt-8 inline-block text-accent underline underline-offset-4">
           {t('continue')}
         </Link>
@@ -56,7 +38,7 @@ export default function CartPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
-      <h1 className="text-3xl">{t('title')}</h1>
+      <h1 className="text-3xl font-semibold">{t('title')}</h1>
       <ul className="mt-10 divide-y divide-sand">
         {items.map((item) => (
           <li key={item.id || `${item.productId}-${item.variantId}`} className="flex gap-5 py-6">
@@ -110,7 +92,7 @@ export default function CartPage() {
         ))}
       </ul>
       <div className="mt-10 flex items-center justify-between border-t border-sand pt-6">
-        <p className="text-lg">{formatPrice(total, locale)}</p>
+        <p className="text-lg font-semibold">{formatPrice(total, locale)}</p>
         <Link href="/checkout" className="bg-ink px-8 py-3 text-xs uppercase tracking-[0.25em] text-cream">
           {t('checkout')}
         </Link>

@@ -11,6 +11,8 @@ import {
 import type { Cart, Product } from '@/lib/types';
 import { localizedName, type Locale } from '@/lib/types';
 
+const GUEST_CART_KEY = 'ipek-guest-cart';
+
 export type CartItem = {
   id?: string;
   productId: string;
@@ -33,11 +35,31 @@ type CartContextValue = {
   removeItem: (productId: string, variantId?: string, lineId?: string) => Promise<void>;
   setQuantity: (lineId: string, quantity: number) => Promise<void>;
   refresh: () => Promise<void>;
+  clearCart: () => void;
   count: number;
   total: number;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
+
+function guestLineId(variantId: string) {
+  return `guest-${variantId}`;
+}
+
+function readGuestCart(): CartItem[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(GUEST_CART_KEY);
+    return raw ? (JSON.parse(raw) as CartItem[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeGuestCart(items: CartItem[]) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(GUEST_CART_KEY, JSON.stringify(items));
+}
 
 function mapCart(cart: Cart, locale: Locale = 'en'): CartItem[] {
   return (cart.items || []).map((item) => {
@@ -76,11 +98,23 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const refresh = useCallback(async () => {
     if (!user) {
-      setItems([]);
+      setItems(readGuestCart());
       return;
     }
     setLoading(true);
     try {
+      const guest = readGuestCart();
+      if (guest.length) {
+        writeGuestCart([]);
+        for (const item of guest) {
+          if (!item.variantId) continue;
+          try {
+            await addCartItem(item.variantId, item.quantity || 1);
+          } catch {
+            // keep going so the rest of the cart still merges
+          }
+        }
+      }
       const cart = await getCart();
       setItems(mapCart(cart));
     } catch {
@@ -97,8 +131,30 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const addItem = useCallback(
     async (item: CartItem) => {
-      if (!user || !item.variantId) {
-        throw new Error('login-required');
+      if (!item.variantId) {
+        throw new Error('variant-required');
+      }
+      if (!user) {
+        setItems((prev) => {
+          const existing = prev.find((entry) => entry.variantId === item.variantId);
+          const next = existing
+            ? prev.map((entry) =>
+                entry.variantId === item.variantId
+                  ? { ...entry, quantity: entry.quantity + (item.quantity || 1) }
+                  : entry,
+              )
+            : [
+                ...prev,
+                {
+                  ...item,
+                  id: guestLineId(item.variantId!),
+                  quantity: item.quantity || 1,
+                },
+              ];
+          writeGuestCart(next);
+          return next;
+        });
+        return;
       }
       const cart = await addCartItem(item.variantId, item.quantity || 1);
       setItems(mapCart(cart));
@@ -108,17 +164,47 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const removeItem = useCallback(
     async (_productId: string, _variantId?: string, lineId?: string) => {
+      if (!user) {
+        setItems((prev) => {
+          const next = prev.filter((entry) => {
+            if (lineId) return entry.id !== lineId;
+            if (_variantId) return entry.variantId !== _variantId;
+            return entry.productId !== _productId;
+          });
+          writeGuestCart(next);
+          return next;
+        });
+        return;
+      }
       const id = lineId || items.find((entry) => entry.variantId === _variantId)?.id;
       if (!id) return;
       const cart = await removeCartItem(id);
       setItems(mapCart(cart));
     },
-    [items],
+    [items, user],
   );
 
-  const setQuantity = useCallback(async (lineId: string, quantity: number) => {
-    const cart = await updateCartItem(lineId, quantity);
-    setItems(mapCart(cart));
+  const setQuantity = useCallback(
+    async (lineId: string, quantity: number) => {
+      if (!user) {
+        setItems((prev) => {
+          const next = prev.map((entry) =>
+            entry.id === lineId ? { ...entry, quantity } : entry,
+          );
+          writeGuestCart(next);
+          return next;
+        });
+        return;
+      }
+      const cart = await updateCartItem(lineId, quantity);
+      setItems(mapCart(cart));
+    },
+    [user],
+  );
+
+  const clearCart = useCallback(() => {
+    writeGuestCart([]);
+    setItems([]);
   }, []);
 
   const value = useMemo<CartContextValue>(
@@ -129,10 +215,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       removeItem,
       setQuantity,
       refresh,
+      clearCart,
       count: items.reduce((sum, item) => sum + item.quantity, 0),
       total: items.reduce((sum, item) => sum + item.price * item.quantity, 0),
     }),
-    [items, loading, addItem, removeItem, setQuantity, refresh],
+    [items, loading, addItem, removeItem, setQuantity, refresh, clearCart],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

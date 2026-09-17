@@ -17,7 +17,11 @@ import { ListingFilters } from '@/components/listing/ListingFilters';
 import { absoluteUrl, categoryPath, departmentPath } from '@/lib/paths';
 import { site } from '@/lib/site';
 import { parseListingSearch, toProductQuery, type ListingSearch } from '@/lib/listing';
-import { getFilterFacets } from '@/lib/listing-data';
+import {
+  categoriesForDepartment,
+  getFilterFacets,
+  sizeGroupForDepartment,
+} from '@/lib/listing-data';
 
 export const revalidate = 300;
 export const dynamicParams = true;
@@ -96,6 +100,7 @@ export default async function CategoryPage({
     department,
   ).catch(() => null);
   if (!categoryItem?.department) notFound();
+  const departmentItem = categoryItem.department;
 
   const productQuery = toProductQuery(listing, {
     locale: typedLocale,
@@ -108,19 +113,24 @@ export default async function CategoryPage({
     safeFetch(
       () =>
         getCategories({
+          department_id: departmentItem.id,
           department_slug: department,
           locale: typedLocale,
-          limit: 50,
+          limit: 100,
         }),
-      emptyPage(50),
+      emptyPage(100),
     ),
     safeFetch(() => getProducts(productQuery), emptyPage(12)),
-    getFilterFacets(),
+    getFilterFacets(sizeGroupForDepartment(departmentItem)),
     getTranslations('home'),
   ]);
 
   const name = localizedName(categoryItem, typedLocale);
-  const departmentName = localizedName(categoryItem.department, typedLocale);
+  const departmentName = localizedName(departmentItem, typedLocale);
+  const departmentCategories = categoriesForDepartment(
+    categories.results,
+    departmentItem.id,
+  );
 
   return (
     <>
@@ -168,7 +178,7 @@ export default async function CategoryPage({
             locale={typedLocale}
             departmentSlug={department}
             categorySlug={category}
-            categories={categories.results}
+            categories={departmentCategories}
             colors={facets.colors}
             sizes={facets.sizes}
             brands={facets.brands}

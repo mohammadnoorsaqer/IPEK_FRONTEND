@@ -120,6 +120,13 @@ export function publicGet<T>(path: string) {
   return apiRequest<T>(path);
 }
 
+export function publicSend<T>(path: string, method: string, body?: unknown) {
+  return apiRequest<T>(path, {
+    method,
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+}
+
 export function authGet<T>(path: string) {
   return apiRequest<T>(path, {}, { auth: true });
 }

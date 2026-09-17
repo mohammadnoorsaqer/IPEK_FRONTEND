@@ -3,19 +3,15 @@
 import { useMemo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { formatPrice } from '@/lib/format';
-import { localizedName, localizedSlug, type Locale, type Product } from '@/lib/types';
+import { localizedName, type Locale, type Product } from '@/lib/types';
 import { useCart, productToCartItem } from '@/components/cart/CartProvider';
-import { useAuth } from '@/components/auth/AuthProvider';
-import { Link } from '@/i18n/navigation';
 import { MediaFrame } from '@/components/media/MediaFrame';
 import { FavoriteButton } from '@/components/favorites/FavoriteButton';
 
 export function ProductDetail({ product }: { product: Product }) {
   const locale = useLocale() as Locale;
   const t = useTranslations('product');
-  const authT = useTranslations('auth');
   const { addItem } = useCart();
-  const { user } = useAuth();
   const [colorId, setColorId] = useState(product.variants?.[0]?.color?.id);
   const [sizeId, setSizeId] = useState<string>();
   const [guideOpen, setGuideOpen] = useState(false);
@@ -161,38 +157,29 @@ export function ProductDetail({ product }: { product: Product }) {
             : t('selectSize')}
         </p>
 
-        {!user ? (
-          <Link
-            href={`/login?next=/products/${localizedSlug(product, locale)}`}
-            className="mt-8 btn-live inline-block"
-          >
-            {authT('loginToShop')}
-          </Link>
-        ) : (
-          <button
-            type="button"
-            disabled={!selected || !inStock}
-            onClick={async () => {
-              try {
-                await addItem(
-                  productToCartItem(product, {
-                    variantId: selected?.id,
-                    color: selected?.color
-                      ? localizedName(selected.color, locale)
-                      : undefined,
-                    size: selected?.size?.code,
-                  }),
-                );
-                setMessage(t('added'));
-              } catch {
-                setMessage(t('addError'));
-              }
-            }}
-            className="mt-8 btn-live inline-block disabled:opacity-40"
-          >
-            {t('addToCart')}
-          </button>
-        )}
+        <button
+          type="button"
+          disabled={!selected || !inStock}
+          onClick={async () => {
+            try {
+              await addItem(
+                productToCartItem(product, {
+                  variantId: selected?.id,
+                  color: selected?.color
+                    ? localizedName(selected.color, locale)
+                    : undefined,
+                  size: selected?.size?.code,
+                }),
+              );
+              setMessage(t('added'));
+            } catch {
+              setMessage(t('addError'));
+            }
+          }}
+          className="mt-8 btn-live inline-block disabled:opacity-40"
+        >
+          {t('addToCart')}
+        </button>
         {message ? <p className="mt-3 text-sm text-muted">{message}</p> : null}
       </div>
 
