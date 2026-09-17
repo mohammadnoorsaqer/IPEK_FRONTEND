@@ -1,0 +1,19 @@
+import { site } from '@/lib/site';
+
+export function WhatsAppButton() {
+  const phone = site.phone.replace(/[^\d]/g, '');
+
+  return (
+    <a
+      href={`https://wa.me/${phone}`}
+      className="whatsapp-live fixed bottom-5 end-5 z-40 flex size-12 items-center justify-center rounded-full bg-accent text-cream shadow-lg transition hover:scale-105 hover:bg-accent-dark"
+      target="_blank"
+      rel="noreferrer"
+      aria-label="WhatsApp"
+    >
+      <svg viewBox="0 0 24 24" className="size-6 fill-current" aria-hidden>
+        <path d="M12.04 2C6.58 2 2.15 6.42 2.15 11.88c0 1.74.46 3.45 1.32 4.95L2 22l5.32-1.4a10 10 0 0 0 4.72 1.2h.01c5.46 0 9.89-4.42 9.89-9.88C21.94 6.42 17.5 2 12.04 2Zm5.76 14.2c-.24.68-1.4 1.3-1.94 1.38-.5.08-1.12.11-1.81-.11-.42-.14-.95-.31-1.64-.6-2.89-1.25-4.77-4.16-4.92-4.35-.14-.2-1.18-1.57-1.18-3 0-1.42.75-2.12 1.01-2.41.27-.29.58-.36.77-.36h.56c.18 0 .42-.07.66.5.24.58.82 2 .89 2.15.07.14.12.31.02.5-.1.2-.14.31-.28.48-.14.16-.3.37-.42.5-.14.14-.28.29-.12.56.16.27.7 1.16 1.5 1.88 1.04.93 1.91 1.22 2.18 1.36.27.14.43.12.59-.07.16-.2.68-.79.86-1.06.18-.27.36-.22.6-.13.24.08 1.54.73 1.8.86.27.14.44.2.51.31.07.12.07.68-.17 1.36Z" />
+      </svg>
+    </a>
+  );
+}

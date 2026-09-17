@@ -1,0 +1,159 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-cream text-ink antialiased;
+}
+
+::selection {
+  background: #b4532a;
+  color: #f7f3ee;
+}
+
+.skeleton {
+  @apply animate-pulse rounded-md bg-sand/80;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  animation: fade-up 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.reveal-delay-1 {
+  animation-delay: 0.08s;
+}
+.reveal-delay-2 {
+  animation-delay: 0.16s;
+}
+.reveal-delay-3 {
+  animation-delay: 0.24s;
+}
+.reveal-delay-4 {
+  animation-delay: 0.32s;
+}
+.reveal-delay-5 {
+  animation-delay: 0.4s;
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 28s linear infinite;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+.float-slow {
+  animation: float 7s ease-in-out infinite;
+}
+
+.btn-live {
+  @apply relative overflow-hidden bg-ink px-8 py-3 text-xs uppercase tracking-[0.25em] text-cream transition;
+}
+
+.btn-live::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(247, 243, 238, 0.18) 45%,
+    transparent 100%
+  );
+  transform: translateX(-120%);
+  animation: sheen 2.8s ease-in-out infinite;
+}
+
+.media-frame {
+  @apply relative overflow-hidden bg-sand;
+}
+
+.media-frame img,
+.media-frame .next-image {
+  transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.group:hover .media-frame img,
+.group:hover .media-frame .next-image {
+  transform: scale(1.06);
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes sheen {
+  0%,
+  55% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(180, 83, 42, 0.35);
+  }
+  70% {
+    box-shadow: 0 0 0 14px rgba(180, 83, 42, 0);
+  }
+}
+
+.whatsapp-live {
+  animation: pulse-soft 2.4s ease-out infinite;
+}
+
+[dir='rtl'] .marquee-track {
+  animation-name: marquee-rtl;
+}
+
+@keyframes marquee-rtl {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(50%);
+  }
+}

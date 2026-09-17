@@ -1,0 +1,106 @@
+{
+  "nav": {
+    "home": "Home",
+    "search": "Search",
+    "cart": "Cart",
+    "account": "Account",
+    "favorites": "Favorites"
+  },
+  "auth": {
+    "login": "Sign in",
+    "logout": "Sign out",
+    "register": "Create account",
+    "loginTitle": "Welcome back",
+    "loginSubtitle": "Sign in to use your bag, checkout, and order history.",
+    "registerTitle": "Create your account",
+    "registerSubtitle": "Registered customers can add pieces to the bag and place orders.",
+    "email": "Email",
+    "password": "Password",
+    "passwordHint": "At least 8 characters, with upper, lower, number, and a special character.",
+    "name": "Name",
+    "phone": "Phone",
+    "pleaseWait": "Please wait…",
+    "noAccount": "New here?",
+    "hasAccount": "Already have an account?",
+    "loginToShop": "Sign in to add to bag"
+  },
+  "home": {
+    "eyebrow": "Turkish clothing in Jordan",
+    "title": "Quiet luxury, made to wear.",
+    "subtitle": "Seasonal pieces selected for everyday elegance — delivered across Jordan.",
+    "shop": "Shop the collection",
+    "newArrivals": "Just arrived",
+    "lookbook": "The look",
+    "ticker1": "Amman delivery",
+    "ticker2": "Turkish tailoring",
+    "ticker3": "New season live",
+    "ticker4": "Cash or Cliq",
+    "ticker5": "WhatsApp styling",
+    "ctaNote": "Free delivery notes via WhatsApp · Amman & nationwide",
+    "bestsellers": "Bestsellers",
+    "sale": "On sale",
+    "departments": "Shop by department",
+    "empty": "The collection is being prepared. Check back soon."
+  },
+  "product": {
+    "addToCart": "Add to bag",
+    "added": "Added to your bag.",
+    "addError": "Could not add this piece. Try another size.",
+    "favorite": "Save",
+    "sizeGuide": "Size guide",
+    "selectSize": "Select a size",
+    "selectColor": "Colour",
+    "inStock": "In stock",
+    "outOfStock": "Out of stock",
+    "jod": "JOD",
+    "sale": "Sale"
+  },
+  "listing": {
+    "filters": "Refine",
+    "empty": "No pieces found in this collection yet.",
+    "sort": "Sort",
+    "bestSelling": "Bestsellers",
+    "newest": "Newest"
+  },
+  "cart": {
+    "title": "Your bag",
+    "empty": "Your bag is empty.",
+    "checkout": "Checkout",
+    "remove": "Remove",
+    "continue": "Continue shopping",
+    "loginRequired": "Sign in to view your bag and place an order."
+  },
+  "checkout": {
+    "title": "Checkout",
+    "address": "Delivery address",
+    "payment": "Payment",
+    "cash": "Cash on delivery",
+    "cliq": "Cliq transfer",
+    "place": "Place order",
+    "summary": "Order summary",
+    "total": "Total",
+    "loginRequired": "Sign in to complete checkout."
+  },
+  "account": {
+    "title": "Account",
+    "orders": "Orders",
+    "profile": "Profile",
+    "emptyOrders": "No orders yet.",
+    "placed": "Your order was placed. We’ll confirm it shortly.",
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    }
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search dresses, coats, linen…"
+  },
+  "footer": {
+    "contact": "WhatsApp",
+    "rights": "All rights reserved."
+  }
+}
