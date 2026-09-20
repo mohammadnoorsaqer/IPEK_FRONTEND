@@ -71,6 +71,8 @@ export type NamedItem = {
 export type Color = NamedItem & { hex_code: string };
 export type Size = NamedItem & { code: string; size_group?: string };
 export type Brand = NamedItem & {
+  slug_en?: string;
+  slug_ar?: string;
   logo_url?: string | null;
   image_url?: string | null;
 };
@@ -183,4 +185,26 @@ export function localizedSlug(
   locale: Locale,
 ) {
   return locale === 'ar' ? item.slug_ar : item.slug_en;
+}
+
+/** Safe decode for route params that may arrive percent-encoded (once or twice). */
+export function decodeParam(value?: string | null) {
+  if (!value) return '';
+  let current = value;
+  for (let i = 0; i < 2; i += 1) {
+    if (!/%[0-9A-Fa-f]{2}/.test(current)) break;
+    try {
+      const next = decodeURIComponent(current);
+      if (next === current) break;
+      current = next;
+    } catch {
+      break;
+    }
+  }
+  return current;
+}
+
+/** Readable label from a slug/param that may still be encoded. */
+export function humanizeParam(value?: string | null) {
+  return decodeParam(value).replace(/-/g, ' ').trim();
 }

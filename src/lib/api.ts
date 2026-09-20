@@ -154,6 +154,18 @@ export function register(payload: {
   return authForm<User>('/auth/register', payload);
 }
 
+export function registerPhone(payload: {
+  username: string;
+  phone_number: string;
+  idToken: string;
+}) {
+  return authForm<User>('/auth/register/phone', payload);
+}
+
+export function loginPhone(idToken: string) {
+  return authForm<User>('/auth/phone', { idToken });
+}
+
 export async function logout() {
   try {
     await authSend('/auth/logout', 'POST', {});

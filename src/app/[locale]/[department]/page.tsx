@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { emptyPage, getCategories, getDepartmentBySlug, getProducts, getSitemapData } from '@/lib/api';
 import { safeFetch } from '@/lib/safe';
-import { localizedName, type Locale } from '@/lib/types';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { AlternateLinks } from '@/components/i18n/AlternateLinks';
 import { ProductGrid } from '@/components/product/ProductGrid';
@@ -21,6 +20,7 @@ import {
   getFilterFacets,
   sizeGroupForDepartment,
 } from '@/lib/listing-data';
+import { decodeParam, localizedName, type Locale } from '@/lib/types';
 
 export const revalidate = 0;
 export const dynamic = 'force-dynamic';
@@ -86,11 +86,14 @@ export default async function DepartmentPage({
   params: Promise<{ locale: string; department: string }>;
   searchParams: Promise<ListingSearch>;
 }) {
-  const { locale, department } = await params;
+  const { locale, department: departmentParam } = await params;
   const search = await searchParams;
   setRequestLocale(locale);
   const typedLocale = locale as Locale;
+  const department = decodeParam(departmentParam);
   const listing = parseListingSearch(search);
+
+  if (reservedDepartmentSlugs.has(department)) notFound();
 
   const departmentItem = await getDepartmentBySlug(typedLocale, department).catch(
     () => null,
@@ -197,9 +200,9 @@ function listingQueryKey(listing: ReturnType<typeof parseListingSearch>) {
     listing.sort,
     listing.min_price,
     listing.max_price,
-    listing.color_id,
-    listing.size_id,
-    listing.brand_id,
-    listing.season_id,
+    listing.color_ids.join(','),
+    listing.size_ids.join(','),
+    listing.brand_ids.join(','),
+    listing.season_ids.join(','),
   ].join('-');
 }

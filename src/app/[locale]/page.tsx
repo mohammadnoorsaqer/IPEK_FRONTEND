@@ -11,11 +11,12 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import { AlternateLinks } from '@/components/i18n/AlternateLinks';
 import { absoluteUrl, languageAlternates } from '@/lib/paths';
 import { Reveal } from '@/components/motion/Reveal';
-import { primaryImageUrl } from '@/components/media/MediaFrame';
+import { primaryImageUrl } from '@/lib/media';
 import { ClothesScene } from '@/components/home/ClothesScene';
 import { HomeFeatures, HomeHelp } from '@/components/home/HomeExtras';
 
-export const revalidate = 300;
+export const revalidate = 0;
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,
@@ -101,6 +102,7 @@ export default async function HomePage({
   const visibleDepartments = departments.results.filter(
     (item) => item.is_visible !== false,
   );
+  const shopBrands = brands.results;
   const covers = coverByDepartment([
     ...bestsellers.results,
     ...newest.results,
@@ -174,13 +176,13 @@ export default async function HomePage({
 
       <HomeFeatures />
 
-      {brands.results.length > 0 ? (
+      {shopBrands.length > 0 ? (
         <section className="mx-auto max-w-site px-4 pb-12 sm:px-6">
           <Reveal>
             <h2 className="mb-5 text-2xl font-semibold">{t('brands')}</h2>
           </Reveal>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 lg:gap-4">
-            {brands.results.map((brand, index) => (
+            {shopBrands.map((brand, index) => (
               <Reveal key={brand.id} delay={index * 40}>
                 <BrandCard
                   brand={brand}

@@ -11,7 +11,13 @@ html {
 }
 
 body {
-  @apply bg-cream text-ink antialiased;
+  @apply bg-cream text-ink antialiased text-[17px] leading-7 sm:text-[18px] sm:leading-8;
+}
+
+h1,
+h2,
+h3 {
+  @apply tracking-tight;
 }
 
 ::selection {

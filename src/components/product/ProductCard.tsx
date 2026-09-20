@@ -5,9 +5,10 @@ import { Link } from '@/i18n/navigation';
 import { formatPrice } from '@/lib/format';
 import { localizedName, localizedSlug, type Product } from '@/lib/types';
 import type { Locale } from '@/lib/types';
-import { MediaFrame, primaryImageUrl } from '@/components/media/MediaFrame';
+import { MediaFrame } from '@/components/media/MediaFrame';
 import { FavoriteButton } from '@/components/favorites/FavoriteButton';
 import { Reveal } from '@/components/motion/Reveal';
+import { primaryImageUrl } from '@/lib/media';
 import clsx from 'clsx';
 
 export function ProductCard({
@@ -68,12 +69,12 @@ export function ProductCard({
           <h3
             className={clsx(
               'mt-3 font-medium',
-              compact ? 'text-base leading-6' : 'text-lg leading-7',
+              compact ? 'text-lg leading-7' : 'text-xl leading-8',
             )}
           >
             {localizedName(product, locale)}
           </h3>
-          <p className={clsx('mt-1.5', compact ? 'text-sm' : 'text-base')}>
+          <p className={clsx('mt-1.5 font-medium', compact ? 'text-base' : 'text-lg')}>
             {onSale ? (
               <>
                 <span className="me-2 text-muted line-through">

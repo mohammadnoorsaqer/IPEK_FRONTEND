@@ -134,6 +134,7 @@ export function ProductDetail({ product }: { product: Product }) {
               alt={localizedName(product, locale)}
               aspect="aspect-[4/5]"
               priority
+              zoomOnHover
               sizes="(min-width: 1024px) 45vw, 100vw"
             />
             <span className="absolute bottom-3 start-3 rounded bg-ink/70 px-3 py-1.5 text-sm text-cream">

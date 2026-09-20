@@ -10,6 +10,9 @@ const nextConfig: NextConfig = {
       { protocol: 'http', hostname: 'localhost', pathname: '/**' },
       { protocol: 'http', hostname: '127.0.0.1', pathname: '/**' },
     ],
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 };
 

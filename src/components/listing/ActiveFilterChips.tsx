@@ -5,6 +5,8 @@ import { Link, usePathname } from '@/i18n/navigation';
 import { formatPrice } from '@/lib/format';
 import { listingHref, type ListingValues } from '@/lib/listing';
 import {
+  decodeParam,
+  humanizeParam,
   localizedName,
   localizedSlug,
   type Brand,
@@ -49,21 +51,23 @@ export function ActiveFilterChips({
   const t = useTranslations('listing');
   const pathname = usePathname();
   const chips: Chip[] = [];
+  const activeCategory = decodeParam(categorySlug);
+  const deptSlug = decodeParam(departmentSlug);
 
   function without(partial: Partial<ListingValues>) {
     return listingHref(pathname, { ...values, ...partial });
   }
 
-  if (categorySlug) {
+  if (activeCategory) {
     const category = categories.find(
-      (item) => localizedSlug(item, locale) === categorySlug,
+      (item) => decodeParam(localizedSlug(item, locale)) === activeCategory,
     );
     chips.push({
       key: 'category',
       group: t('category'),
-      label: category ? localizedName(category, locale) : categorySlug,
+      label: category ? localizedName(category, locale) : humanizeParam(activeCategory),
       imageUrl: category?.image_url,
-      href: listingHref(`/${departmentSlug}`, values),
+      href: listingHref(`/${deptSlug}`, values),
     });
   }
 
@@ -85,45 +89,53 @@ export function ActiveFilterChips({
     });
   }
 
-  if (values.color_id) {
-    const color = colors.find((item) => item.id === values.color_id);
+  for (const colorId of values.color_ids) {
+    const color = colors.find((item) => item.id === colorId);
     chips.push({
-      key: 'color',
+      key: `color-${colorId}`,
       group: t('color'),
       label: color ? localizedName(color, locale) : t('color'),
       hex: color?.hex_code,
-      href: without({ color_id: undefined }),
+      href: without({
+        color_ids: values.color_ids.filter((id) => id !== colorId),
+      }),
     });
   }
 
-  if (values.size_id) {
-    const size = sizes.find((item) => item.id === values.size_id);
+  for (const sizeId of values.size_ids) {
+    const size = sizes.find((item) => item.id === sizeId);
     chips.push({
-      key: 'size',
+      key: `size-${sizeId}`,
       group: t('size'),
       label: size ? size.code : t('size'),
-      href: without({ size_id: undefined }),
+      href: without({
+        size_ids: values.size_ids.filter((id) => id !== sizeId),
+      }),
     });
   }
 
-  if (values.brand_id) {
-    const brand = brands.find((item) => item.id === values.brand_id);
+  for (const brandId of values.brand_ids) {
+    const brand = brands.find((item) => item.id === brandId);
     chips.push({
-      key: 'brand',
+      key: `brand-${brandId}`,
       group: t('brand'),
       label: brand ? localizedName(brand, locale) : t('brand'),
       imageUrl: brand?.logo_url || brand?.image_url,
-      href: without({ brand_id: undefined }),
+      href: without({
+        brand_ids: values.brand_ids.filter((id) => id !== brandId),
+      }),
     });
   }
 
-  if (values.season_id) {
-    const season = seasons.find((item) => item.id === values.season_id);
+  for (const seasonId of values.season_ids) {
+    const season = seasons.find((item) => item.id === seasonId);
     chips.push({
-      key: 'season',
+      key: `season-${seasonId}`,
       group: t('season'),
       label: season ? localizedName(season, locale) : t('season'),
-      href: without({ season_id: undefined }),
+      href: without({
+        season_ids: values.season_ids.filter((id) => id !== seasonId),
+      }),
     });
   }
 
@@ -131,14 +143,14 @@ export function ActiveFilterChips({
 
   return (
     <div className="mb-5 flex flex-wrap items-center gap-2">
-      <span className="text-xs text-muted">{t('activeFilters')}</span>
+      <span className="text-sm text-muted">{t('activeFilters')}</span>
       {chips.map((chip) => (
         <Link
           key={chip.key}
           href={chip.href}
           replace
           aria-label={t('remove', { label: `${chip.group}: ${chip.label}` })}
-          className="inline-flex items-center gap-1.5 rounded-full border border-s-4 border-accent bg-accent/10 py-1 pe-2 ps-2.5 text-xs font-semibold text-accent-dark transition hover:bg-accent/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
+          className="inline-flex items-center gap-1.5 rounded-full border border-s-4 border-accent bg-accent/10 py-1.5 pe-2.5 ps-3 text-sm font-semibold text-accent-dark transition hover:bg-accent/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
         >
           {chip.imageUrl ? <FilterThumb src={chip.imageUrl} /> : null}
           {chip.hex ? (
@@ -153,7 +165,7 @@ export function ActiveFilterChips({
         </Link>
       ))}
       <Link
-        href={`/${departmentSlug}`}
+        href={`/${deptSlug}`}
         replace
         className="ms-1 rounded-full px-1 text-xs text-accent underline underline-offset-4 transition hover:text-accent-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
       >

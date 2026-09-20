@@ -9,18 +9,31 @@ import {
   useState,
 } from 'react';
 import { clearTokens, getAccessToken } from '@/lib/http';
-import { getMe, login as loginApi, logout as logoutApi, register as registerApi } from '@/lib/api';
+import {
+  getMe,
+  login as loginApi,
+  loginPhone as loginPhoneApi,
+  logout as logoutApi,
+  register as registerApi,
+  registerPhone as registerPhoneApi,
+} from '@/lib/api';
 import type { User } from '@/lib/types';
 
 type AuthContextValue = {
   user: User | null;
   ready: boolean;
   login: (email: string, password: string) => Promise<void>;
+  loginPhone: (idToken: string) => Promise<void>;
   register: (payload: {
     username: string;
     email: string;
     password: string;
     phone_number?: string;
+  }) => Promise<void>;
+  registerPhone: (payload: {
+    username: string;
+    phone_number: string;
+    idToken: string;
   }) => Promise<void>;
   logout: () => Promise<void>;
 };
@@ -59,6 +72,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(next);
   }, []);
 
+  const loginPhone = useCallback(async (idToken: string) => {
+    const next = await loginPhoneApi(idToken);
+    setUser(next);
+  }, []);
+
   const register = useCallback(
     async (payload: {
       username: string;
@@ -75,6 +93,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
+  const registerPhone = useCallback(
+    async (payload: {
+      username: string;
+      phone_number: string;
+      idToken: string;
+    }) => {
+      const next = await registerPhoneApi(payload);
+      setUser(next);
+    },
+    [],
+  );
+
   const logout = useCallback(async () => {
     await logoutApi();
     clearTokens();
@@ -82,8 +112,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, ready, login, register, logout }),
-    [user, ready, login, register, logout],
+    () => ({ user, ready, login, loginPhone, register, registerPhone, logout }),
+    [user, ready, login, loginPhone, register, registerPhone, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

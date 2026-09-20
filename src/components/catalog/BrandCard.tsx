@@ -1,5 +1,4 @@
 import { Link } from '@/i18n/navigation';
-import { MediaFrame } from '@/components/media/MediaFrame';
 import { localizedName, type Brand, type Locale } from '@/lib/types';
 
 export function BrandCard({
@@ -14,30 +13,30 @@ export function BrandCard({
   priority?: boolean;
 }) {
   const name = localizedName(brand, locale);
-  const src = brand.logo_url || brand.image_url || imageUrl || null;
+  const logo = brand.logo_url || brand.image_url || imageUrl || null;
 
   return (
     <article>
       <Link
         href={`/brands/${brand.id}`}
-        className="group block overflow-hidden rounded-xl border border-sand bg-white shadow-[0_8px_24px_rgba(43,43,43,0.04)] transition hover:-translate-y-0.5 hover:border-accent/40"
+        className="group flex h-full flex-col overflow-hidden rounded-xl border border-sand bg-white transition hover:border-accent/50 hover:shadow-[0_8px_24px_rgba(43,43,43,0.06)]"
       >
-        <MediaFrame
-          src={src}
-          alt={name}
-          aspect="aspect-[5/4]"
-          priority={priority}
-          sizes="(min-width: 1024px) 18vw, (min-width: 640px) 30vw, 50vw"
-        >
-          {!src ? (
-            <span className="absolute inset-0 flex items-center justify-center text-3xl font-semibold text-ink/20">
-              {name.slice(0, 1)}
-            </span>
-          ) : null}
-          <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/80 via-ink/30 to-transparent px-3 py-3 text-base font-semibold text-cream sm:text-lg">
-            {name}
-          </span>
-        </MediaFrame>
+        <div className="flex aspect-[5/3] items-center justify-center bg-[#faf8f5] px-6 py-5">
+          {logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={logo}
+              alt={name}
+              className="max-h-16 w-full object-contain transition duration-300 group-hover:scale-[1.03] sm:max-h-20"
+              loading={priority ? 'eager' : 'lazy'}
+            />
+          ) : (
+            <span className="text-3xl font-semibold text-ink/20">{name.slice(0, 1)}</span>
+          )}
+        </div>
+        <p className="border-t border-sand px-3 py-3 text-center text-sm font-medium text-ink">
+          {name}
+        </p>
       </Link>
     </article>
   );

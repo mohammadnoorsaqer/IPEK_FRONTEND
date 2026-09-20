@@ -9,13 +9,12 @@ import {
   getSitemapData,
 } from '@/lib/api';
 import { safeFetch } from '@/lib/safe';
-import { localizedName, type Locale } from '@/lib/types';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { AlternateLinks } from '@/components/i18n/AlternateLinks';
 import { ProductGrid } from '@/components/product/ProductGrid';
 import { ListingFilters } from '@/components/listing/ListingFilters';
 import { ActiveFilterChips } from '@/components/listing/ActiveFilterChips';
-import { absoluteUrl, categoryPath, departmentPath } from '@/lib/paths';
+import { absoluteUrl, categoryPath, departmentPath, reservedDepartmentSlugs } from '@/lib/paths';
 import { site } from '@/lib/site';
 import { parseListingSearch, toProductQuery, type ListingSearch } from '@/lib/listing';
 import {
@@ -23,6 +22,7 @@ import {
   getFilterFacets,
   sizeGroupForDepartment,
 } from '@/lib/listing-data';
+import { decodeParam, localizedName, type Locale } from '@/lib/types';
 
 export const revalidate = 0;
 export const dynamic = 'force-dynamic';
@@ -90,11 +90,15 @@ export default async function CategoryPage({
   params: Promise<{ locale: string; department: string; category: string }>;
   searchParams: Promise<ListingSearch>;
 }) {
-  const { locale, department, category } = await params;
+  const { locale, department: departmentParam, category: categoryParam } = await params;
   const search = await searchParams;
   setRequestLocale(locale);
   const typedLocale = locale as Locale;
+  const department = decodeParam(departmentParam);
+  const category = decodeParam(categoryParam);
   const listing = parseListingSearch(search);
+
+  if (reservedDepartmentSlugs.has(department)) notFound();
 
   const categoryItem = await getCategoryBySlug(
     typedLocale,
