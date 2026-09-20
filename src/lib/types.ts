@@ -31,6 +31,7 @@ export type Department = {
   slug_en: string;
   slug_ar: string;
   is_visible: boolean;
+  image_url?: string | null;
 };
 
 export type Category = {
@@ -42,6 +43,7 @@ export type Category = {
   department_id: string;
   parent_id?: string | null;
   department?: Department;
+  image_url?: string | null;
 };
 
 export type ProductImage = {
@@ -68,7 +70,10 @@ export type NamedItem = {
 
 export type Color = NamedItem & { hex_code: string };
 export type Size = NamedItem & { code: string; size_group?: string };
-export type Brand = NamedItem;
+export type Brand = NamedItem & {
+  logo_url?: string | null;
+  image_url?: string | null;
+};
 export type Season = NamedItem;
 
 export type Product = {

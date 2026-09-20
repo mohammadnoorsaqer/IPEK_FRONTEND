@@ -26,9 +26,10 @@ export default async function SearchPage({
 
   const products = query
     ? await safeFetch(
-        () => getProducts({ locale: typedLocale, search: query, limit: 12 }),
-        { results: [], page: 1, limit: 12, total: 0, totalPages: 0 },
+        () => getProducts({ locale: typedLocale, search: query, limit: 10 }),
+        { results: [], page: 1, limit: 10, total: 0, totalPages: 0 },
       )
+    : { results: [], page: 1, limit: 10, total: 0, totalPages: 0 };
     : { results: [], page: 1, limit: 12, total: 0, totalPages: 0 };
 
   return (
@@ -42,6 +43,9 @@ export default async function SearchPage({
           locale={typedLocale}
           query={{ search: query || undefined }}
           initialProducts={products.results}
+          initialPage={products.page}
+          initialTotal={products.total}
+          initialTotalPages={products.totalPages}
           compact
         />
       </div>

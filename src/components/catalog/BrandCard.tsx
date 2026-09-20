@@ -14,6 +14,7 @@ export function BrandCard({
   priority?: boolean;
 }) {
   const name = localizedName(brand, locale);
+  const src = brand.logo_url || brand.image_url || imageUrl || null;
 
   return (
     <article>
@@ -22,18 +23,18 @@ export function BrandCard({
         className="group block overflow-hidden rounded-xl border border-sand bg-white shadow-[0_8px_24px_rgba(43,43,43,0.04)] transition hover:-translate-y-0.5 hover:border-accent/40"
       >
         <MediaFrame
-          src={imageUrl}
+          src={src}
           alt={name}
           aspect="aspect-[5/4]"
           priority={priority}
           sizes="(min-width: 1024px) 18vw, (min-width: 640px) 30vw, 50vw"
         >
-          {!imageUrl ? (
+          {!src ? (
             <span className="absolute inset-0 flex items-center justify-center text-3xl font-semibold text-ink/20">
               {name.slice(0, 1)}
             </span>
           ) : null}
-          <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/80 via-ink/30 to-transparent px-3 py-2.5 text-sm font-medium text-cream">
+          <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/80 via-ink/30 to-transparent px-3 py-3 text-base font-semibold text-cream sm:text-lg">
             {name}
           </span>
         </MediaFrame>

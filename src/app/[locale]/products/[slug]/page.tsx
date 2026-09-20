@@ -10,7 +10,8 @@ import { ProductDetail } from '@/components/product/ProductDetail';
 import { absoluteUrl, categoryPath, departmentPath, productPath } from '@/lib/paths';
 import { site } from '@/lib/site';
 
-export const revalidate = 300;
+export const revalidate = 0;
+export const dynamic = 'force-dynamic';
 export const dynamicParams = true;
 
 export async function generateStaticParams() {

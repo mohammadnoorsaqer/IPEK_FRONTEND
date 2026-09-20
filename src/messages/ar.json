@@ -67,9 +67,13 @@
     "selectSize": "اختاري المقاس",
     "selectColor": "اللون",
     "inStock": "متوفر",
+    "stockCount": "{count} قطعة متوفرة",
     "outOfStock": "غير متوفر",
     "jod": "د.أ",
-    "sale": "تخفيض"
+    "sale": "تخفيض",
+    "zoom": "عرض صورة أكبر",
+    "tapToZoom": "اضغطي للتكبير · مرري للتكبير أكثر",
+    "resetZoom": "إعادة"
   },
   "listing": {
     "filters": "تصفية",
@@ -85,11 +89,22 @@
     "to": "إلى",
     "apply": "تطبيق",
     "clear": "مسح التصفية",
+    "clearAll": "مسح الكل",
+    "activeFilters": "عوامل التصفية المفعّلة",
+    "activeCount": "{count} عوامل تصفية مفعّلة",
+    "remove": "إزالة التصفية {label}",
     "color": "اللون",
     "size": "المقاس",
     "brand": "العلامة",
     "season": "الموسم",
-    "all": "الكل"
+    "all": "الكل",
+    "showMore": "عرض المزيد",
+    "showLess": "عرض أقل",
+    "pagination": "ترقيم الصفحات",
+    "prev": "السابق",
+    "next": "التالي",
+    "pageOf": "صفحة {page} من {totalPages}",
+    "showing": "عرض {from}–{to} من {total}"
   },
   "cart": {
     "title": "سلتك",

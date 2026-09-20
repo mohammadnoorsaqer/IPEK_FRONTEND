@@ -55,6 +55,20 @@ export function listingQueryString(values: ListingValues) {
   return query.toString();
 }
 
+export function activeFilterCount(
+  values: ListingValues,
+  categorySelected = false,
+) {
+  return [
+    categorySelected,
+    values.min_price != null || values.max_price != null,
+    Boolean(values.color_id),
+    Boolean(values.size_id),
+    Boolean(values.brand_id),
+    Boolean(values.season_id),
+  ].filter(Boolean).length;
+}
+
 export function listingHref(pathname: string, values: ListingValues) {
   const query = listingQueryString(values);
   return query ? `${pathname}?${query}` : pathname;

@@ -14,6 +14,7 @@ export function DepartmentCard({
   priority?: boolean;
 }) {
   const name = localizedName(department, locale);
+  const src = department.image_url || imageUrl || null;
 
   return (
     <article>
@@ -22,13 +23,13 @@ export function DepartmentCard({
         className="group block overflow-hidden rounded-xl border border-sand bg-white shadow-[0_8px_24px_rgba(43,43,43,0.04)] transition hover:-translate-y-0.5 hover:border-accent/40"
       >
         <MediaFrame
-          src={imageUrl}
+          src={src}
           alt={name}
           aspect="aspect-[5/4]"
           priority={priority}
           sizes="(min-width: 1024px) 22vw, (min-width: 640px) 40vw, 50vw"
         >
-          {!imageUrl ? (
+          {!src ? (
             <span className="absolute inset-0 flex items-center justify-center text-3xl text-ink/20">
               {name.slice(0, 1)}
             </span>

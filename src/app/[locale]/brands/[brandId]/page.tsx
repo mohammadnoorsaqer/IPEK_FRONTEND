@@ -9,7 +9,8 @@ import { AlternateLinks } from '@/components/i18n/AlternateLinks';
 import { absoluteUrl } from '@/lib/paths';
 import { site } from '@/lib/site';
 
-export const revalidate = 300;
+export const revalidate = 0;
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,
@@ -48,9 +49,9 @@ export default async function BrandPage({
         locale: typedLocale,
         brand_id: brand.id,
         sort: 'newest',
-        limit: 12,
+        limit: 10,
       }),
-    emptyPage(12),
+    emptyPage(10),
   );
 
   const name = localizedName(brand, typedLocale);
@@ -60,11 +61,14 @@ export default async function BrandPage({
       <AlternateLinks en={`/brands/${brand.id}`} ar={`/brands/${brand.id}`} />
       <div className="mx-auto max-w-site px-4 py-10 sm:px-6">
         <p className="text-xs uppercase tracking-[0.3em] text-muted">{t('brands')}</p>
-        <h1 className="mb-6 mt-2 text-3xl font-semibold">{name}</h1>
+        <h1 className="mb-6 mt-2 text-4xl font-semibold sm:text-5xl">{name}</h1>
         <ProductGrid
           locale={typedLocale}
           query={{ brand_id: brand.id, sort: 'newest' }}
           initialProducts={products.results}
+          initialPage={products.page}
+          initialTotal={products.total}
+          initialTotalPages={products.totalPages}
           compact
         />
       </div>

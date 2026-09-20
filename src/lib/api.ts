@@ -85,7 +85,7 @@ export function getProducts(params: ProductQuery = {}) {
     size_id: params.size_id,
     brand_id: params.brand_id,
     season_id: params.season_id,
-    limit: params.limit || 12,
+    limit: params.limit || 10,
     page: params.page || 1,
   });
   return publicGet<Paginated<Product>>(`/products?${query.toString()}`);

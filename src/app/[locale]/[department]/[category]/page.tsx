@@ -14,6 +14,7 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import { AlternateLinks } from '@/components/i18n/AlternateLinks';
 import { ProductGrid } from '@/components/product/ProductGrid';
 import { ListingFilters } from '@/components/listing/ListingFilters';
+import { ActiveFilterChips } from '@/components/listing/ActiveFilterChips';
 import { absoluteUrl, categoryPath, departmentPath } from '@/lib/paths';
 import { site } from '@/lib/site';
 import { parseListingSearch, toProductQuery, type ListingSearch } from '@/lib/listing';
@@ -23,7 +24,8 @@ import {
   sizeGroupForDepartment,
 } from '@/lib/listing-data';
 
-export const revalidate = 300;
+export const revalidate = 0;
+export const dynamic = 'force-dynamic';
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
@@ -106,7 +108,7 @@ export default async function CategoryPage({
     locale: typedLocale,
     department_slug: department,
     category_slug: category,
-    limit: 12,
+    limit: 10,
   });
 
   const [categories, products, facets, t] = await Promise.all([
@@ -120,7 +122,7 @@ export default async function CategoryPage({
         }),
       emptyPage(100),
     ),
-    safeFetch(() => getProducts(productQuery), emptyPage(12)),
+    safeFetch(() => getProducts(productQuery), emptyPage(10)),
     getFilterFacets(sizeGroupForDepartment(departmentItem)),
     getTranslations('home'),
   ]);
@@ -185,13 +187,29 @@ export default async function CategoryPage({
             seasons={facets.seasons}
             values={listing}
           />
-          <ProductGrid
-            key={`${department}-${category}-${JSON.stringify(listing)}`}
-            locale={typedLocale}
-            query={productQuery}
-            initialProducts={products.results}
-            compact
-          />
+          <div>
+            <ActiveFilterChips
+              locale={typedLocale}
+              departmentSlug={department}
+              categorySlug={category}
+              categories={departmentCategories}
+              colors={facets.colors}
+              sizes={facets.sizes}
+              brands={facets.brands}
+              seasons={facets.seasons}
+              values={listing}
+            />
+            <ProductGrid
+              key={`${department}-${category}-${JSON.stringify(listing)}`}
+              locale={typedLocale}
+              query={productQuery}
+              initialProducts={products.results}
+              initialPage={products.page}
+              initialTotal={products.total}
+              initialTotalPages={products.totalPages}
+              compact
+            />
+          </div>
         </div>
       </div>
     </>

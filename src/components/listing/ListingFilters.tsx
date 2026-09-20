@@ -17,6 +17,21 @@ import {
 } from '@/lib/types';
 import clsx from 'clsx';
 
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 16 16" className={className} aria-hidden>
+      <path
+        d="M3.5 8.5 6.5 11.5 12.5 4.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function ListingFilters({
   locale,
   departmentSlug,
@@ -43,22 +58,25 @@ export function ListingFilters({
   const pathname = usePathname();
   const [minPrice, setMinPrice] = useState(values.min_price?.toString() || '');
   const [maxPrice, setMaxPrice] = useState(values.max_price?.toString() || '');
+  const [showAllColors, setShowAllColors] = useState(false);
+  const [showAllBrands, setShowAllBrands] = useState(false);
 
   useEffect(() => {
     setMinPrice(values.min_price?.toString() || '');
     setMaxPrice(values.max_price?.toString() || '');
   }, [values.min_price, values.max_price]);
 
-  const hasActive =
-    Boolean(values.min_price) ||
-    Boolean(values.max_price) ||
-    Boolean(values.color_id) ||
-    Boolean(values.size_id) ||
-    Boolean(values.brand_id) ||
-    Boolean(values.season_id) ||
-    Boolean(categorySlug) ||
-    values.sort !== 'newest';
+  const activeCount =
+    Number(Boolean(values.min_price)) +
+    Number(Boolean(values.max_price)) +
+    Number(Boolean(values.color_id)) +
+    Number(Boolean(values.size_id)) +
+    Number(Boolean(values.brand_id)) +
+    Number(Boolean(values.season_id)) +
+    Number(Boolean(categorySlug)) +
+    Number(values.sort !== 'newest');
 
+  const hasActive = activeCount > 0;
   const nextValues = useMemo(() => values, [values]);
   const categoryGroups = useMemo(() => groupCategories(categories), [categories]);
 
@@ -83,17 +101,26 @@ export function ListingFilters({
   const body = (
     <div className="space-y-6">
       <div>
-        <h2 className="text-base font-medium">{t('filters')}</h2>
+        <h2 className="flex items-center gap-2 text-base font-semibold">
+          {t('filters')}
+          {activeCount > 0 ? (
+            <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-xs text-cream">
+              {activeCount}
+            </span>
+          ) : null}
+        </h2>
         <p className="mt-1.5 text-sm leading-6 text-muted">{t('hint')}</p>
       </div>
 
       <section>
-        <p className="mb-2 text-sm">{t('category')}</p>
+        <p className="mb-2 text-sm font-medium">{t('category')}</p>
         <div className="space-y-3">
           <Link
             href={listingHref(`/${departmentSlug}`, { ...values })}
             className={chipClass(!categorySlug)}
+            aria-pressed={!categorySlug}
           >
+            {!categorySlug ? <CheckIcon className="size-3.5" /> : null}
             {t('all')}
           </Link>
           {categoryGroups.parents.map((parent) => {
@@ -109,7 +136,17 @@ export function ListingFilters({
                 <Link
                   href={listingHref(`/${departmentSlug}/${slug}`, { ...values })}
                   className={chipClass(parentActive || childActive)}
+                  aria-pressed={parentActive || childActive}
                 >
+                  {parentActive || childActive ? <CheckIcon className="size-3.5" /> : null}
+                  {'image_url' in parent && (parent as Category & { image_url?: string }).image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={(parent as Category & { image_url?: string }).image_url}
+                      alt=""
+                      className="size-5 rounded object-cover"
+                    />
+                  ) : null}
                   {localizedName(parent, locale)}
                 </Link>
                 {open && children.length > 0 ? (
@@ -123,7 +160,9 @@ export function ListingFilters({
                             ...values,
                           })}
                           className={chipClass(categorySlug === childSlug)}
+                          aria-pressed={categorySlug === childSlug}
                         >
+                          {categorySlug === childSlug ? <CheckIcon className="size-3.5" /> : null}
                           {localizedName(child, locale)}
                         </Link>
                       );
@@ -137,7 +176,7 @@ export function ListingFilters({
       </section>
 
       <form onSubmit={applyPrice}>
-        <p className="mb-2 text-sm">{t('price')}</p>
+        <p className="mb-2 text-sm font-medium">{t('price')}</p>
         <p className="mb-2 text-xs text-muted">{t('priceHint')}</p>
         <div className="grid grid-cols-2 gap-2">
           <label className="text-xs text-muted">
@@ -149,7 +188,7 @@ export function ListingFilters({
               placeholder="0"
               value={minPrice}
               onChange={(event) => setMinPrice(event.target.value)}
-              className="mt-1 w-full rounded-md border border-sand bg-white px-2.5 py-2 text-sm text-ink outline-none focus:border-accent"
+              className="mt-1 w-full rounded-md border border-sand bg-white px-2.5 py-2 text-sm text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
             />
           </label>
           <label className="text-xs text-muted">
@@ -161,7 +200,7 @@ export function ListingFilters({
               placeholder="200"
               value={maxPrice}
               onChange={(event) => setMaxPrice(event.target.value)}
-              className="mt-1 w-full rounded-md border border-sand bg-white px-2.5 py-2 text-sm text-ink outline-none focus:border-accent"
+              className="mt-1 w-full rounded-md border border-sand bg-white px-2.5 py-2 text-sm text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
             />
           </label>
         </div>
@@ -175,9 +214,9 @@ export function ListingFilters({
 
       {colors.length > 0 ? (
         <section>
-          <p className="mb-2 text-sm">{t('color')}</p>
+          <p className="mb-2 text-sm font-medium">{t('color')}</p>
           <div className="flex flex-wrap gap-2">
-            {colors.map((color) => {
+            {(showAllColors ? colors : colors.slice(0, 12)).map((color) => {
               const active = values.color_id === color.id;
               return (
                 <button
@@ -185,8 +224,8 @@ export function ListingFilters({
                   type="button"
                   onClick={() => go({ color_id: active ? undefined : color.id })}
                   className={clsx(
-                    'size-7 rounded-full border-2',
-                    active ? 'border-ink' : 'border-white ring-1 ring-sand',
+                    'size-8 rounded-full border-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
+                    active ? 'border-ink ring-2 ring-accent/40' : 'border-white ring-1 ring-sand hover:ring-ink/40',
                   )}
                   style={{ backgroundColor: color.hex_code }}
                   aria-label={localizedName(color, locale)}
@@ -196,12 +235,21 @@ export function ListingFilters({
               );
             })}
           </div>
+          {colors.length > 12 ? (
+            <button
+              type="button"
+              className="mt-2 text-xs font-medium text-accent underline underline-offset-4"
+              onClick={() => setShowAllColors((v) => !v)}
+            >
+              {showAllColors ? t('showLess') : t('showMore')}
+            </button>
+          ) : null}
         </section>
       ) : null}
 
       {sizes.length > 0 ? (
         <section>
-          <p className="mb-2 text-sm">{t('size')}</p>
+          <p className="mb-2 text-sm font-medium">{t('size')}</p>
           <div className="flex flex-wrap gap-2">
             {sizes.map((size) => {
               const active = values.size_id === size.id;
@@ -211,7 +259,9 @@ export function ListingFilters({
                   type="button"
                   onClick={() => go({ size_id: active ? undefined : size.id })}
                   className={chipClass(active)}
+                  aria-pressed={active}
                 >
+                  {active ? <CheckIcon className="size-3.5" /> : null}
                   {size.code}
                 </button>
               );
@@ -221,28 +271,56 @@ export function ListingFilters({
       ) : null}
 
       {brands.length > 0 ? (
-        <label className="block text-sm">
-          {t('brand')}
-          <select
-            className="mt-2 w-full rounded-md border border-sand bg-white px-3 py-2 text-sm text-ink outline-none focus:border-accent"
-            value={values.brand_id || ''}
-            onChange={(event) => go({ brand_id: event.target.value || undefined })}
-          >
-            <option value="">{t('all')}</option>
-            {brands.map((brand) => (
-              <option key={brand.id} value={brand.id}>
-                {localizedName(brand, locale)}
-              </option>
-            ))}
-          </select>
-        </label>
+        <section>
+          <p className="mb-2 text-sm font-medium">{t('brand')}</p>
+          <div className="flex flex-col gap-1.5">
+            <button
+              type="button"
+              onClick={() => go({ brand_id: undefined })}
+              className={chipClass(!values.brand_id)}
+              aria-pressed={!values.brand_id}
+            >
+              {!values.brand_id ? <CheckIcon className="size-3.5" /> : null}
+              {t('all')}
+            </button>
+            {(showAllBrands ? brands : brands.slice(0, 8)).map((brand) => {
+              const active = values.brand_id === brand.id;
+              const logo = (brand as Brand & { logo_url?: string }).logo_url;
+              return (
+                <button
+                  key={brand.id}
+                  type="button"
+                  onClick={() => go({ brand_id: active ? undefined : brand.id })}
+                  className={chipClass(active)}
+                  aria-pressed={active}
+                >
+                  {active ? <CheckIcon className="size-3.5" /> : null}
+                  {logo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={logo} alt="" className="size-5 rounded object-cover" />
+                  ) : null}
+                  {localizedName(brand, locale)}
+                </button>
+              );
+            })}
+            {brands.length > 8 ? (
+              <button
+                type="button"
+                className="mt-1 text-start text-xs font-medium text-accent underline underline-offset-4"
+                onClick={() => setShowAllBrands((v) => !v)}
+              >
+                {showAllBrands ? t('showLess') : t('showMore')}
+              </button>
+            ) : null}
+          </div>
+        </section>
       ) : null}
 
       {seasons.length > 0 ? (
-        <label className="block text-sm">
+        <label className="block text-sm font-medium">
           {t('season')}
           <select
-            className="mt-2 w-full rounded-md border border-sand bg-white px-3 py-2 text-sm text-ink outline-none focus:border-accent"
+            className="mt-2 w-full rounded-md border border-sand bg-white px-3 py-2 text-sm text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
             value={values.season_id || ''}
             onChange={(event) => go({ season_id: event.target.value || undefined })}
           >
@@ -256,10 +334,10 @@ export function ListingFilters({
         </label>
       ) : null}
 
-      <label className="block text-sm">
+      <label className="block text-sm font-medium">
         {t('sort')}
         <select
-          className="mt-2 w-full rounded-md border border-sand bg-white px-3 py-2 text-sm text-ink outline-none focus:border-accent"
+          className="mt-2 w-full rounded-md border border-sand bg-white px-3 py-2 text-sm text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
           value={values.sort}
           onChange={(event) =>
             go({ sort: event.target.value as ListingValues['sort'] })
@@ -274,7 +352,7 @@ export function ListingFilters({
         <button
           type="button"
           onClick={clear}
-          className="text-sm text-accent underline underline-offset-4"
+          className="text-sm font-medium text-accent underline underline-offset-4"
         >
           {t('clear')}
         </button>
@@ -285,7 +363,14 @@ export function ListingFilters({
   return (
     <aside className="lg:sticky lg:top-24">
       <details className="rounded-xl border border-sand bg-white px-4 py-3 lg:hidden">
-        <summary className="cursor-pointer text-sm">{t('filters')}</summary>
+        <summary className="cursor-pointer text-sm font-medium">
+          {t('filters')}
+          {activeCount > 0 ? (
+            <span className="ms-2 inline-flex min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-xs text-cream">
+              {activeCount}
+            </span>
+          ) : null}
+        </summary>
         <div className="pb-2 pt-4">{body}</div>
       </details>
       <div className="hidden rounded-xl border border-sand bg-white p-5 lg:block">
@@ -297,9 +382,9 @@ export function ListingFilters({
 
 function chipClass(active: boolean) {
   return clsx(
-    'rounded-full border px-3 py-1 text-xs transition',
+    'inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
     active
-      ? 'border-ink bg-ink text-cream'
-      : 'border-sand bg-white text-muted hover:border-ink hover:text-ink',
+      ? 'border-accent border-s-4 border-s-accent bg-accent/10 font-semibold text-ink'
+      : 'border-sand bg-white text-muted hover:border-ink/40 hover:bg-sand/40 hover:text-ink',
   );
 }

@@ -67,13 +67,13 @@ export function ProductCard({
         <Link href={href} className="block">
           <h3
             className={clsx(
-              'mt-2.5 leading-5',
-              compact ? 'text-sm' : 'text-base leading-6',
+              'mt-3 font-medium',
+              compact ? 'text-base leading-6' : 'text-lg leading-7',
             )}
           >
             {localizedName(product, locale)}
           </h3>
-          <p className={clsx('mt-1', compact ? 'text-xs' : 'text-sm')}>
+          <p className={clsx('mt-1.5', compact ? 'text-sm' : 'text-base')}>
             {onSale ? (
               <>
                 <span className="me-2 text-muted line-through">

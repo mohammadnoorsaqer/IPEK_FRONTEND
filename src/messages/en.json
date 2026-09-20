@@ -67,9 +67,13 @@
     "selectSize": "Select a size",
     "selectColor": "Color",
     "inStock": "In stock",
+    "stockCount": "{count} in stock",
     "outOfStock": "Out of stock",
     "jod": "JOD",
-    "sale": "Sale"
+    "sale": "Sale",
+    "zoom": "View larger image",
+    "tapToZoom": "Tap to zoom · scroll to magnify",
+    "resetZoom": "Reset"
   },
   "listing": {
     "filters": "Filters",
@@ -85,11 +89,22 @@
     "to": "To",
     "apply": "Apply",
     "clear": "Clear filters",
+    "clearAll": "Clear all",
+    "activeFilters": "Active filters",
+    "activeCount": "{count} filters applied",
+    "remove": "Remove filter {label}",
     "color": "Color",
     "size": "Size",
     "brand": "Brand",
     "season": "Season",
-    "all": "All"
+    "all": "All",
+    "showMore": "Show more",
+    "showLess": "Show less",
+    "pagination": "Pagination",
+    "prev": "Previous",
+    "next": "Next",
+    "pageOf": "Page {page} of {totalPages}",
+    "showing": "Showing {from}–{to} of {total}"
   },
   "cart": {
     "title": "Your cart",
