@@ -30,7 +30,6 @@ export default async function SearchPage({
         { results: [], page: 1, limit: 10, total: 0, totalPages: 0 },
       )
     : { results: [], page: 1, limit: 10, total: 0, totalPages: 0 };
-    : { results: [], page: 1, limit: 12, total: 0, totalPages: 0 };
 
   return (
     <div className="mx-auto max-w-site px-4 py-12 sm:px-6">
